@@ -13,6 +13,8 @@ import {
   ExternalLink,
   Sparkles,
   AlertCircle,
+  Menu,
+  X,
 } from "lucide-react";
 
 // -----------------------------------------------------------------------------
@@ -78,85 +80,111 @@ function ViewNavigation({
   walletConnected: boolean;
   onWalletToggle: () => void;
 }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  function navigate(view: ViewKey) {
+    onNavigate(view);
+    setMobileMenuOpen(false);
+  }
+
+  const navLinks: { label: string; view: ViewKey }[] = [
+    { label: "Home", view: "home" },
+    { label: "Prover Dashboard", view: "prover" },
+    { label: "Auditor Portal", view: "verifier" },
+  ];
+
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-zinc-950/80 border-b border-slate-800/80 transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
         {/* Brand Logo */}
         <div
-          className="flex items-center space-x-3 cursor-pointer"
-          onClick={() => onNavigate("home")}
+          className="flex items-center space-x-2.5 cursor-pointer"
+          onClick={() => navigate("home")}
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-blue-600 flex items-center justify-center shadow-lg shadow-emerald-500/10">
-            <Sparkles className="w-6 h-6 text-zinc-950 font-bold" />
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-blue-600 flex items-center justify-center shadow-lg shadow-emerald-500/10">
+            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-950 font-bold" />
           </div>
           <div>
-            <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+            <span className="text-lg sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
               zkCred
             </span>
-            <span className="block text-[10px] text-emerald-400 font-mono tracking-widest uppercase">
+            <span className="block text-[9px] sm:text-[10px] text-emerald-400 font-mono tracking-widest uppercase">
               Stellar ZK Layer
             </span>
           </div>
         </div>
 
-        {/* Main Navigation Links */}
+        {/* Desktop Navigation Links */}
         <nav className="hidden md:flex space-x-8 text-sm font-medium">
-          <button
-            onClick={() => onNavigate("home")}
-            className={`px-1 py-2 transition duration-150 ${
-              active === "home"
-                ? "text-emerald-400 border-b-2 border-emerald-500"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            Home
-          </button>
-          <button
-            onClick={() => onNavigate("prover")}
-            className={`px-1 py-2 transition duration-150 ${
-              active === "prover"
-                ? "text-emerald-400 border-b-2 border-emerald-500"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            Prover Dashboard
-          </button>
-          <button
-            onClick={() => onNavigate("verifier")}
-            className={`px-1 py-2 transition duration-150 ${
-              active === "verifier"
-                ? "text-emerald-400 border-b-2 border-emerald-500"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            Auditor Portal
-          </button>
+          {navLinks.map(({ label, view }) => (
+            <button
+              key={view}
+              onClick={() => navigate(view)}
+              className={`px-1 py-2 transition duration-150 ${
+                active === view
+                  ? "text-emerald-400 border-b-2 border-emerald-500"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </nav>
 
-        {/* Wallet Button */}
-        <div className="flex items-center space-x-4">
+        {/* Right side: wallet + hamburger */}
+        <div className="flex items-center gap-2 sm:gap-4">
           <button
             onClick={onWalletToggle}
             className={`flex items-center ${
               walletConnected
                 ? "bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 text-slate-200"
                 : "bg-emerald-600 hover:bg-emerald-500 text-slate-900 font-extrabold"
-            } px-4 py-2 rounded-lg transition duration-200 text-sm font-medium`}
+            } px-3 sm:px-4 py-2 rounded-lg transition duration-200 text-xs sm:text-sm font-medium`}
           >
             {walletConnected ? (
               <>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
-                <span className="font-mono text-sm">GC32...4K91</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse" />
+                <span className="font-mono">GC32...4K91</span>
               </>
             ) : (
               <>
-                <Wallet className="w-4 h-4 mr-2" />
-                Connect Freighter
+                <Wallet className="w-4 h-4 mr-1.5 sm:mr-2" />
+                <span className="hidden xs:inline">Connect </span>Freighter
               </>
             )}
           </button>
+
+          {/* Hamburger — mobile only */}
+          <button
+            onClick={() => setMobileMenuOpen((o) => !o)}
+            className="md:hidden p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile dropdown menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-slate-800/80 bg-zinc-950/95 backdrop-blur-md">
+          <nav className="flex flex-col px-4 py-3 gap-1">
+            {navLinks.map(({ label, view }) => (
+              <button
+                key={view}
+                onClick={() => navigate(view)}
+                className={`text-left px-3 py-3 rounded-lg text-sm font-medium transition duration-150 ${
+                  active === view
+                    ? "text-emerald-400 bg-emerald-950/40 border border-emerald-900/50"
+                    : "text-slate-300 hover:text-white hover:bg-slate-800/50"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
@@ -166,22 +194,22 @@ function LandingHome({ onNavigate }: { onNavigate: (v: ViewKey) => void }) {
   return (
     <div className="relative">
       {/* Hero Section */}
-      <div className="relative py-20 lg:py-32 overflow-hidden">
+      <div className="relative py-14 sm:py-20 lg:py-32 overflow-hidden">
         {/* Glowing background accents */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none"></div>
-        <div className="absolute top-1/3 left-1/4 w-[300px] h-[300px] bg-blue-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] sm:w-[500px] h-[280px] sm:h-[500px] bg-emerald-500/10 blur-[80px] sm:blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute top-1/3 left-1/4 w-[180px] sm:w-[300px] h-[180px] sm:h-[300px] bg-blue-500/10 blur-[60px] sm:blur-[100px] rounded-full pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           {/* Tech Badge */}
           <div className="inline-flex items-center space-x-2 bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-full mb-6">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-            <span className="text-xs font-mono text-emerald-400 font-medium tracking-wide">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span className="text-[10px] sm:text-xs font-mono text-emerald-400 font-medium tracking-wide">
               Stellar Protocol 25 BN254 Native
             </span>
           </div>
 
           {/* Hero Title */}
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-5xl mx-auto leading-none mb-6">
+          <h1 className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-white max-w-5xl mx-auto leading-tight sm:leading-none mb-5 sm:mb-6">
             Prove Your Funds.
             <br />
             <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-500 bg-clip-text text-transparent">
@@ -190,56 +218,50 @@ function LandingHome({ onNavigate }: { onNavigate: (v: ViewKey) => void }) {
           </h1>
 
           {/* Hero Subtitle */}
-          <p className="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed mb-10">
+          <p className="text-base sm:text-lg lg:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed mb-8 sm:mb-10 px-2">
             Zero-Knowledge compliance infrastructure for Stellar. Generate secure
             on-device balance proofs for landlords, creditors, or compliance audits
             without exposing your public key or history.
           </p>
 
           {/* Call to Action Buttons */}
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 max-w-md mx-auto">
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-4 w-full max-w-sm sm:max-w-md mx-auto">
             <button
               onClick={() => onNavigate("prover")}
-              className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold px-8 py-4 rounded-xl shadow-lg shadow-emerald-500/15 transition-all transform hover:-translate-y-0.5 duration-150"
+              className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold px-8 py-3.5 sm:py-4 rounded-xl shadow-lg shadow-emerald-500/15 transition-all transform hover:-translate-y-0.5 duration-150 text-sm sm:text-base"
             >
               Prove My Balance
             </button>
             <button
               onClick={() => onNavigate("verifier")}
-              className="w-full sm:w-auto bg-slate-900/90 hover:bg-slate-850 text-slate-200 border border-slate-800 hover:border-slate-700 font-bold px-8 py-4 rounded-xl transition-all transform hover:-translate-y-0.5 duration-150"
+              className="w-full sm:w-auto bg-slate-900/90 text-slate-200 border border-slate-800 hover:border-slate-700 font-bold px-8 py-3.5 sm:py-4 rounded-xl transition-all transform hover:-translate-y-0.5 duration-150 text-sm sm:text-base"
             >
               Audit a Proof
             </button>
           </div>
 
           {/* Trust Bar */}
-          <div className="mt-20 border-t border-slate-900/60 pt-10">
-            <p className="text-xs font-mono uppercase tracking-widest text-slate-500 mb-6">
+          <div className="mt-14 sm:mt-20 border-t border-slate-900/60 pt-8 sm:pt-10">
+            <p className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-slate-500 mb-5 sm:mb-6">
               Built & Deployed On Secure Infrastructure
             </p>
-            <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-16 opacity-50 grayscale hover:opacity-80 transition-all">
-              <span className="text-slate-300 font-semibold text-lg">
-                STELLAR HORIZON
-              </span>
-              <span className="text-slate-300 font-semibold text-lg">
-                SOROBAN CONTRACTS
-              </span>
-              <span className="text-slate-300 font-semibold text-lg">
-                NOIR CRYPTO
-              </span>
+            <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-16 opacity-50 grayscale hover:opacity-80 transition-all">
+              <span className="text-slate-300 font-semibold text-sm sm:text-lg">STELLAR HORIZON</span>
+              <span className="text-slate-300 font-semibold text-sm sm:text-lg">SOROBAN CONTRACTS</span>
+              <span className="text-slate-300 font-semibold text-sm sm:text-lg">NOIR CRYPTO</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Problem vs Solution Matrix */}
-      <div className="py-20 bg-slate-950/40 border-t border-b border-slate-900">
+      <div className="py-14 sm:py-20 bg-slate-950/40 border-t border-b border-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight text-white mb-4">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-4 px-2">
               Why the industry requires Zero-Knowledge Proofs
             </h2>
-            <p className="text-slate-400 max-w-2xl mx-auto">
+            <p className="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base px-2">
               Traditional proof-of-funds techniques put both your finances and
               identity at perpetual risk.
             </p>
@@ -318,13 +340,13 @@ function LandingHome({ onNavigate }: { onNavigate: (v: ViewKey) => void }) {
       </div>
 
       {/* Process Step-by-Step Timeline */}
-      <div className="py-20">
+      <div className="py-14 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight text-white mb-4">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-4 px-2">
               How does the mathematical circuit work?
             </h2>
-            <p className="text-slate-400 max-w-2xl mx-auto">
+            <p className="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base px-2">
               Generate, distribute, and verify cryptographically valid proofs in 3
               fast steps.
             </p>
@@ -475,23 +497,21 @@ function ProverMode() {
   return (
     <div className="grid gap-5">
       {/* Wallet header */}
-      <div className="flex items-center justify-between rounded-xl border border-white/10 bg-gradient-to-br from-zinc-900/80 to-zinc-950/80 px-5 py-4 backdrop-blur-xl">
-        <div className="flex items-center gap-3.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/10 ring-1 ring-inset ring-indigo-400/20">
-            <Wallet className="h-[18px] w-[18px] text-indigo-300" />
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-gradient-to-br from-zinc-900/80 to-zinc-950/80 px-4 sm:px-5 py-4 backdrop-blur-xl">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 ring-1 ring-inset ring-indigo-400/20">
+            <Wallet className="h-4 w-4 sm:h-[18px] sm:w-[18px] text-indigo-300" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-sm font-medium text-zinc-100">
-                GC32...4K91
-              </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-mono text-sm font-medium text-zinc-100">GC32...4K91</span>
               <PulseDot color="emerald" />
               <span className="text-xs font-medium text-emerald-400">Connected</span>
             </div>
             <p className="mt-0.5 text-xs text-zinc-500">Stellar mainnet · Freighter</p>
           </div>
         </div>
-        <div className="text-right">
+        <div className="text-right ml-auto">
           <p className="text-[11px] uppercase tracking-wide text-zinc-500">Balance</p>
           <p className="text-sm font-semibold text-zinc-100">42,318.96 USDC</p>
         </div>
@@ -579,27 +599,31 @@ function ProverMode() {
             </p>
           </div>
 
-          <div className="mt-4 flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-black/40 px-3.5 py-3">
-            <code className="overflow-x-auto whitespace-nowrap text-xs text-zinc-400 font-mono">
-              {MOCK_PROOF}
-            </code>
-            <button
-              type="button"
-              onClick={copyProof}
-              className="flex flex-shrink-0 items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-xs font-medium text-zinc-300 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.08]"
-            >
-              {copied ? (
-                <>
-                  <Check className="h-3.5 w-3.5 text-emerald-400" />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="h-3.5 w-3.5" />
-                  Copy
-                </>
-              )}
-            </button>
+          <div className="mt-4 rounded-lg border border-white/10 bg-black/40 px-3.5 py-3">
+            <div className="overflow-x-auto">
+              <code className="whitespace-nowrap text-xs text-zinc-400 font-mono block pb-1">
+                {MOCK_PROOF}
+              </code>
+            </div>
+            <div className="flex justify-end mt-2 pt-2 border-t border-white/5">
+              <button
+                type="button"
+                onClick={copyProof}
+                className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-xs font-medium text-zinc-300 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.08]"
+              >
+                {copied ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-emerald-400" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3.5 w-3.5" />
+                    Copy proof
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
           <p className="mt-3 text-xs text-zinc-500">
@@ -777,15 +801,15 @@ export default function ZkCredDashboard() {
         {currentView === "home" && <LandingHome onNavigate={handleNavigate} />}
 
         {currentView === "prover" && (
-          <section className="py-12 max-w-4xl mx-auto px-4 w-full">
-            <div className="mb-10 text-center">
+          <section className="py-8 sm:py-12 max-w-4xl mx-auto px-4 w-full">
+            <div className="mb-8 sm:mb-10 text-center">
               <span className="text-xs font-mono font-bold uppercase tracking-widest text-emerald-400 bg-emerald-950/40 border border-emerald-900/50 px-3 py-1.5 rounded-full">
                 Prover Environment
               </span>
-              <h2 className="text-3xl font-extrabold text-white mt-4 mb-2">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white mt-4 mb-2 px-2">
                 On-Device Zero-Knowledge Generator
               </h2>
-              <p className="text-slate-400">
+              <p className="text-slate-400 text-sm sm:text-base px-2">
                 Establish minimum threshold certifications locally. Your keys and
                 balances are never transmitted to any API server.
               </p>
@@ -793,25 +817,25 @@ export default function ZkCredDashboard() {
 
             {walletConnected ? (
               <div className="rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/50 to-zinc-950/50 p-1 shadow-2xl shadow-black/40">
-                <div className="rounded-[14px] bg-black/20 p-5 sm:p-6">
+                <div className="rounded-[14px] bg-black/20 p-4 sm:p-6">
                   <ProverMode />
                 </div>
               </div>
             ) : (
-              <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-12 text-center">
-                <div className="w-16 h-16 bg-slate-800/80 border border-slate-700 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Lock className="w-8 h-8 text-slate-400" />
+              <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-8 sm:p-12 text-center">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-slate-800/80 border border-slate-700 rounded-full flex items-center justify-center mx-auto mb-5 sm:mb-6">
+                  <Lock className="w-7 h-7 sm:w-8 sm:h-8 text-slate-400" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-2">
                   Wallet Disconnected
                 </h3>
-                <p className="text-slate-400 max-w-md mx-auto mb-6">
+                <p className="text-slate-400 max-w-md mx-auto mb-6 text-sm sm:text-base">
                   To scan live asset accounts from the Stellar network, connect your
                   authorized Freighter wallet.
                 </p>
                 <button
                   onClick={handleWalletToggle}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-slate-900 font-extrabold px-6 py-3 rounded-xl transition duration-200"
+                  className="bg-emerald-600 hover:bg-emerald-500 text-slate-900 font-extrabold px-6 py-3 rounded-xl transition duration-200 text-sm sm:text-base"
                 >
                   Connect Stellar Wallet
                 </button>
@@ -821,22 +845,22 @@ export default function ZkCredDashboard() {
         )}
 
         {currentView === "verifier" && (
-          <section className="py-12 max-w-4xl mx-auto px-4 w-full">
-            <div className="mb-10 text-center">
+          <section className="py-8 sm:py-12 max-w-4xl mx-auto px-4 w-full">
+            <div className="mb-8 sm:mb-10 text-center">
               <span className="text-xs font-mono font-bold uppercase tracking-widest text-blue-400 bg-blue-950/40 border border-blue-900/50 px-3 py-1.5 rounded-full">
                 Auditor Verification Portal
               </span>
-              <h2 className="text-3xl font-extrabold text-white mt-4 mb-2">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white mt-4 mb-2 px-2">
                 Stellar Soroban Proof Auditor
               </h2>
-              <p className="text-slate-400">
+              <p className="text-slate-400 text-sm sm:text-base px-2">
                 Instantly execute on-chain BN254 host parameters. Verify physical
                 asset solvency without ever learning identities.
               </p>
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/50 to-zinc-950/50 p-1 shadow-2xl shadow-black/40">
-              <div className="rounded-[14px] bg-black/20 p-5 sm:p-6">
+              <div className="rounded-[14px] bg-black/20 p-4 sm:p-6">
                 <VerifierMode />
               </div>
             </div>
@@ -845,8 +869,8 @@ export default function ZkCredDashboard() {
       </main>
 
       {/* Global Footer */}
-      <footer className="mt-auto border-t border-slate-900 bg-slate-950/80 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+      <footer className="mt-auto border-t border-slate-900 bg-slate-950/80 py-8 sm:py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-5 sm:gap-6">
           <div className="text-center md:text-left">
             <span className="text-sm font-bold text-white">
               zkCred — Cryptographic Proof of Funds
@@ -855,14 +879,14 @@ export default function ZkCredDashboard() {
               Stellar Global Hacker Series Submission.
             </p>
           </div>
-          <div className="flex space-x-6 text-xs text-slate-500">
-            <a href="#" className="hover:text-slate-300">
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-slate-500">
+            <a href="#" className="hover:text-slate-300 transition-colors">
               Architecture Specs
             </a>
-            <a href="#" className="hover:text-slate-300">
+            <a href="#" className="hover:text-slate-300 transition-colors">
               Soroban Verifier Source
             </a>
-            <a href="#" className="hover:text-slate-300">
+            <a href="#" className="hover:text-slate-300 transition-colors">
               Noir Circuit Schema
             </a>
           </div>
