@@ -194,7 +194,7 @@ function LandingHome({ onNavigate }: { onNavigate: (v: ViewKey) => void }) {
   return (
     <div className="relative">
       {/* Hero Section */}
-      <div className="relative py-14 sm:py-20 lg:py-32 overflow-hidden">
+      <div className="relative py-14 sm:py-20 lg:py-32 overflow-hidden w-full">
         {/* Glowing background accents */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] sm:w-[500px] h-[280px] sm:h-[500px] bg-emerald-500/10 blur-[80px] sm:blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute top-1/3 left-1/4 w-[180px] sm:w-[300px] h-[180px] sm:h-[300px] bg-blue-500/10 blur-[60px] sm:blur-[100px] rounded-full pointer-events-none" />
@@ -497,12 +497,12 @@ function ProverMode() {
   return (
     <div className="grid gap-5">
       {/* Wallet header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-gradient-to-br from-zinc-900/80 to-zinc-950/80 px-4 sm:px-5 py-4 backdrop-blur-xl">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-gradient-to-br from-zinc-900/80 to-zinc-950/80 px-4 sm:px-5 py-4 backdrop-blur-xl min-w-0">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="flex h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 ring-1 ring-inset ring-indigo-400/20">
             <Wallet className="h-4 w-4 sm:h-[18px] sm:w-[18px] text-indigo-300" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-mono text-sm font-medium text-zinc-100">GC32...4K91</span>
               <PulseDot color="emerald" />
@@ -511,7 +511,7 @@ function ProverMode() {
             <p className="mt-0.5 text-xs text-zinc-500">Stellar mainnet · Freighter</p>
           </div>
         </div>
-        <div className="text-right ml-auto">
+        <div className="text-right flex-shrink-0">
           <p className="text-[11px] uppercase tracking-wide text-zinc-500">Balance</p>
           <p className="text-sm font-semibold text-zinc-100">42,318.96 USDC</p>
         </div>
@@ -600,8 +600,8 @@ function ProverMode() {
           </div>
 
           <div className="mt-4 rounded-lg border border-white/10 bg-black/40 px-3.5 py-3">
-            <div className="overflow-x-auto">
-              <code className="whitespace-nowrap text-xs text-zinc-400 font-mono block pb-1">
+            <div className="overflow-hidden">
+              <code className="break-all text-xs text-zinc-400 font-mono block pb-1 leading-relaxed">
                 {MOCK_PROOF}
               </code>
             </div>
@@ -787,7 +787,7 @@ export default function ZkCredDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col">
+    <div className="min-h-screen bg-zinc-950 flex flex-col overflow-x-hidden">
       {/* Navigation Header */}
       <ViewNavigation
         active={currentView}
