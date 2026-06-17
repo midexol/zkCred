@@ -10,11 +10,9 @@ import {
   Lock,
   ChevronDown,
   Loader2,
-  FileSearch,
   ExternalLink,
   Sparkles,
   AlertCircle,
-  Fingerprint,
 } from "lucide-react";
 
 // -----------------------------------------------------------------------------
@@ -63,49 +61,331 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 // -----------------------------------------------------------------------------
-// Tab control
-// -----------------------------------------------------------------------------
+// Navigation and View Management
+// ---------------------------------------------------------------
 
-type TabKey = "prover" | "verifier";
+type ViewKey = "home" | "prover" | "verifier";
 
-function TabSwitch({
+// Header Navigation Component
+function ViewNavigation({
   active,
-  onChange,
+  onNavigate,
+  walletConnected,
+  onWalletToggle,
 }: {
-  active: TabKey;
-  onChange: (t: TabKey) => void;
+  active: ViewKey;
+  onNavigate: (v: ViewKey) => void;
+  walletConnected: boolean;
+  onWalletToggle: () => void;
 }) {
   return (
-    <div className="relative inline-flex rounded-xl border border-white/10 bg-black/30 p-1 backdrop-blur-xl">
-      <span
-        className={`absolute inset-y-1 w-[calc(50%-4px)] rounded-lg bg-gradient-to-br from-violet-600/90 to-indigo-600/90 shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_8px_24px_-8px_rgba(99,102,241,0.6)] transition-transform duration-300 ease-out ${
-          active === "prover" ? "translate-x-0" : "translate-x-[calc(100%+4px)]"
-        }`}
-      />
-      <button
-        type="button"
-        onClick={() => onChange("prover")}
-        className={`relative z-10 flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-colors duration-300 ${
-          active === "prover" ? "text-white" : "text-zinc-400 hover:text-zinc-200"
-        }`}
-      >
-        <Fingerprint className="h-4 w-4" />
-        Prover Mode
-      </button>
-      <button
-        type="button"
-        onClick={() => onChange("verifier")}
-        className={`relative z-10 flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-colors duration-300 ${
-          active === "verifier" ? "text-white" : "text-zinc-400 hover:text-zinc-200"
-        }`}
-      >
-        <FileSearch className="h-4 w-4" />
-        Verifier Mode
-      </button>
+    <header className="sticky top-0 z-50 backdrop-blur-md bg-zinc-950/80 border-b border-slate-800/80 transition-all">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        {/* Brand Logo */}
+        <div
+          className="flex items-center space-x-3 cursor-pointer"
+          onClick={() => onNavigate("home")}
+        >
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-blue-600 flex items-center justify-center shadow-lg shadow-emerald-500/10">
+            <Sparkles className="w-6 h-6 text-zinc-950 font-bold" />
+          </div>
+          <div>
+            <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+              zkCred
+            </span>
+            <span className="block text-[10px] text-emerald-400 font-mono tracking-widest uppercase">
+              Stellar ZK Layer
+            </span>
+          </div>
+        </div>
+
+        {/* Main Navigation Links */}
+        <nav className="hidden md:flex space-x-8 text-sm font-medium">
+          <button
+            onClick={() => onNavigate("home")}
+            className={`px-1 py-2 transition duration-150 ${
+              active === "home"
+                ? "text-emerald-400 border-b-2 border-emerald-500"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            Home
+          </button>
+          <button
+            onClick={() => onNavigate("prover")}
+            className={`px-1 py-2 transition duration-150 ${
+              active === "prover"
+                ? "text-emerald-400 border-b-2 border-emerald-500"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            Prover Dashboard
+          </button>
+          <button
+            onClick={() => onNavigate("verifier")}
+            className={`px-1 py-2 transition duration-150 ${
+              active === "verifier"
+                ? "text-emerald-400 border-b-2 border-emerald-500"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            Auditor Portal
+          </button>
+        </nav>
+
+        {/* Wallet Button */}
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={onWalletToggle}
+            className={`flex items-center ${
+              walletConnected
+                ? "bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 text-slate-200"
+                : "bg-emerald-600 hover:bg-emerald-500 text-slate-900 font-extrabold"
+            } px-4 py-2 rounded-lg transition duration-200 text-sm font-medium`}
+          >
+            {walletConnected ? (
+              <>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
+                <span className="font-mono text-sm">GC32...4K91</span>
+              </>
+            ) : (
+              <>
+                <Wallet className="w-4 h-4 mr-2" />
+                Connect Freighter
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+// Landing Home Page Component
+function LandingHome({ onNavigate }: { onNavigate: (v: ViewKey) => void }) {
+  return (
+    <div className="relative">
+      {/* Hero Section */}
+      <div className="relative py-20 lg:py-32 overflow-hidden">
+        {/* Glowing background accents */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none"></div>
+        <div className="absolute top-1/3 left-1/4 w-[300px] h-[300px] bg-blue-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+          {/* Tech Badge */}
+          <div className="inline-flex items-center space-x-2 bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-full mb-6">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <span className="text-xs font-mono text-emerald-400 font-medium tracking-wide">
+              Stellar Protocol 25 BN254 Native
+            </span>
+          </div>
+
+          {/* Hero Title */}
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-5xl mx-auto leading-none mb-6">
+            Prove Your Funds.
+            <br />
+            <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-500 bg-clip-text text-transparent">
+              Keep Your Privacy.
+            </span>
+          </h1>
+
+          {/* Hero Subtitle */}
+          <p className="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed mb-10">
+            Zero-Knowledge compliance infrastructure for Stellar. Generate secure
+            on-device balance proofs for landlords, creditors, or compliance audits
+            without exposing your public key or history.
+          </p>
+
+          {/* Call to Action Buttons */}
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 max-w-md mx-auto">
+            <button
+              onClick={() => onNavigate("prover")}
+              className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold px-8 py-4 rounded-xl shadow-lg shadow-emerald-500/15 transition-all transform hover:-translate-y-0.5 duration-150"
+            >
+              Prove My Balance
+            </button>
+            <button
+              onClick={() => onNavigate("verifier")}
+              className="w-full sm:w-auto bg-slate-900/90 hover:bg-slate-850 text-slate-200 border border-slate-800 hover:border-slate-700 font-bold px-8 py-4 rounded-xl transition-all transform hover:-translate-y-0.5 duration-150"
+            >
+              Audit a Proof
+            </button>
+          </div>
+
+          {/* Trust Bar */}
+          <div className="mt-20 border-t border-slate-900/60 pt-10">
+            <p className="text-xs font-mono uppercase tracking-widest text-slate-500 mb-6">
+              Built & Deployed On Secure Infrastructure
+            </p>
+            <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-16 opacity-50 grayscale hover:opacity-80 transition-all">
+              <span className="text-slate-300 font-semibold text-lg">
+                STELLAR HORIZON
+              </span>
+              <span className="text-slate-300 font-semibold text-lg">
+                SOROBAN CONTRACTS
+              </span>
+              <span className="text-slate-300 font-semibold text-lg">
+                NOIR CRYPTO
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Problem vs Solution Matrix */}
+      <div className="py-20 bg-slate-950/40 border-t border-b border-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold tracking-tight text-white mb-4">
+              Why the industry requires Zero-Knowledge Proofs
+            </h2>
+            <p className="text-slate-400 max-w-2xl mx-auto">
+              Traditional proof-of-funds techniques put both your finances and
+              identity at perpetual risk.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Red Flag Card */}
+            <div className="bg-slate-900/50 border border-red-950/50 rounded-2xl p-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full blur-xl"></div>
+              <span className="text-xs font-mono font-bold text-red-500 uppercase tracking-widest bg-red-950/40 px-3 py-1 rounded-md">
+                Traditional Method
+              </span>
+              <h3 className="text-xl font-bold text-slate-100 mt-4 mb-6">
+                Exposing Public Wallet Addresses
+              </h3>
+              <ul className="space-y-4">
+                <li className="flex items-start text-slate-400 text-sm">
+                  <AlertCircle className="w-5 h-5 text-red-500 mr-3 flex-shrink-0" />
+                  <span>
+                    Auditor views exact, real-time balances of all crypto-assets.
+                  </span>
+                </li>
+                <li className="flex items-start text-slate-400 text-sm">
+                  <AlertCircle className="w-5 h-5 text-red-500 mr-3 flex-shrink-0" />
+                  <span>
+                    Total transaction history is cataloged and linkable to your
+                    physical identity.
+                  </span>
+                </li>
+                <li className="flex items-start text-slate-400 text-sm">
+                  <AlertCircle className="w-5 h-5 text-red-500 mr-3 flex-shrink-0" />
+                  <span>
+                    Increases vectors for physical threat, targeting, and custom
+                    spear-phishing.
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Green Flag Card */}
+            <div className="bg-slate-900/50 border border-emerald-950/50 rounded-2xl p-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl"></div>
+              <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest bg-emerald-950/40 px-3 py-1 rounded-md">
+                zkCred Standard
+              </span>
+              <h3 className="text-xl font-bold text-slate-100 mt-4 mb-6">
+                Cryptographic Security Shield
+              </h3>
+              <ul className="space-y-4">
+                <li className="flex items-start text-slate-400 text-sm">
+                  <Check className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0" />
+                  <span>
+                    Lender only receives binary{" "}
+                    <strong className="text-emerald-400 font-semibold">TRUE</strong>{" "}
+                    confirming you exceed the threshold.
+                  </span>
+                </li>
+                <li className="flex items-start text-slate-400 text-sm">
+                  <Check className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0" />
+                  <span>
+                    Your private key and absolute balance never leave the browser
+                    runtime.
+                  </span>
+                </li>
+                <li className="flex items-start text-slate-400 text-sm">
+                  <Check className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0" />
+                  <span>
+                    Compliant cryptographic output verifies on-chain in seconds via
+                    Soroban.
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Process Step-by-Step Timeline */}
+      <div className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold tracking-tight text-white mb-4">
+              How does the mathematical circuit work?
+            </h2>
+            <p className="text-slate-400 max-w-2xl mx-auto">
+              Generate, distribute, and verify cryptographically valid proofs in 3
+              fast steps.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 relative">
+            {/* Background Connector Line */}
+            <div className="hidden md:block absolute top-1/2 left-1/12 right-1/12 h-[2px] bg-gradient-to-r from-emerald-500/20 via-blue-500/20 to-slate-800 -translate-y-12 -z-10"></div>
+
+            {/* Step 1 */}
+            <div className="bg-slate-900/30 border border-slate-800/80 rounded-2xl p-6 text-center hover:border-slate-700/80 transition duration-300">
+              <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center mx-auto mb-6 border border-slate-700 text-emerald-400 font-mono font-bold text-lg shadow-md shadow-emerald-500/5">
+                1
+              </div>
+              <h4 className="text-lg font-bold text-slate-100 mb-2">
+                Connect & Read Balance
+              </h4>
+              <p className="text-sm text-slate-400">
+                Connect securely via Freighter. zkCred fetches your public token
+                values straight from the Stellar Testnet.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="bg-slate-900/30 border border-slate-800/80 rounded-2xl p-6 text-center hover:border-slate-700/80 transition duration-300">
+              <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center mx-auto mb-6 border border-slate-700 text-blue-400 font-mono font-bold text-lg shadow-md shadow-blue-500/5">
+                2
+              </div>
+              <h4 className="text-lg font-bold text-slate-100 mb-2">
+                Generate Local ZKP
+              </h4>
+              <p className="text-sm text-slate-400">
+                Specify your threshold. Our client-side Noir engine runs
+                mathematical parameters directly inside your browser to produce
+                proof π.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="bg-slate-900/30 border border-slate-800/80 rounded-2xl p-6 text-center hover:border-slate-700/80 transition duration-300">
+              <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center mx-auto mb-6 border border-slate-700 text-teal-400 font-mono font-bold text-lg shadow-md shadow-teal-500/5">
+                3
+              </div>
+              <h4 className="text-lg font-bold text-slate-100 mb-2">
+                On-Chain Smart Validation
+              </h4>
+              <p className="text-sm text-slate-400">
+                The auditor uploads the mathematical code. Soroban contracts execute
+                native validation checks and return verified trust states.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
+// Tab control
+
+// Prover Mode
 // -----------------------------------------------------------------------------
 // Prover Mode
 // -----------------------------------------------------------------------------
@@ -470,47 +750,124 @@ function VerifierMode() {
 // -----------------------------------------------------------------------------
 
 export default function ZkCredDashboard() {
-  const [tab, setTab] = useState<TabKey>("prover");
+  const [currentView, setCurrentView] = useState<ViewKey>("home");
+  const [walletConnected, setWalletConnected] = useState(false);
+
+  const handleNavigate = (view: ViewKey) => {
+    setCurrentView(view);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleWalletToggle = () => {
+    setWalletConnected((prev) => !prev);
+  };
 
   return (
-    <div className="min-h-screen bg-zinc-950 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(99,102,241,0.12),transparent)] px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mx-auto w-full max-w-2xl">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/20 to-indigo-500/20 ring-1 ring-inset ring-white/10">
-              <Sparkles className="h-5 w-5 text-violet-300" />
+    <div className="min-h-screen bg-zinc-950 flex flex-col">
+      {/* Navigation Header */}
+      <ViewNavigation
+        active={currentView}
+        onNavigate={handleNavigate}
+        walletConnected={walletConnected}
+        onWalletToggle={handleWalletToggle}
+      />
+
+      {/* Main Content */}
+      <main className="flex-grow">
+        {currentView === "home" && <LandingHome onNavigate={handleNavigate} />}
+
+        {currentView === "prover" && (
+          <section className="py-12 max-w-4xl mx-auto px-4 w-full">
+            <div className="mb-10 text-center">
+              <span className="text-xs font-mono font-bold uppercase tracking-widest text-emerald-400 bg-emerald-950/40 border border-emerald-900/50 px-3 py-1.5 rounded-full">
+                Prover Environment
+              </span>
+              <h2 className="text-3xl font-extrabold text-white mt-4 mb-2">
+                On-Device Zero-Knowledge Generator
+              </h2>
+              <p className="text-slate-400">
+                Establish minimum threshold certifications locally. Your keys and
+                balances are never transmitted to any API server.
+              </p>
             </div>
-            <div>
-              <h1 className="text-lg font-semibold tracking-tight text-zinc-50">
-                zkCred
-              </h1>
-              <p className="text-xs text-zinc-500">Privacy-preserving proof of funds</p>
+
+            {walletConnected ? (
+              <div className="rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/50 to-zinc-950/50 p-1 shadow-2xl shadow-black/40">
+                <div className="rounded-[14px] bg-black/20 p-5 sm:p-6">
+                  <ProverMode />
+                </div>
+              </div>
+            ) : (
+              <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-12 text-center">
+                <div className="w-16 h-16 bg-slate-800/80 border border-slate-700 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Lock className="w-8 h-8 text-slate-400" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">
+                  Wallet Disconnected
+                </h3>
+                <p className="text-slate-400 max-w-md mx-auto mb-6">
+                  To scan live asset accounts from the Stellar network, connect your
+                  authorized Freighter wallet.
+                </p>
+                <button
+                  onClick={handleWalletToggle}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-slate-900 font-extrabold px-6 py-3 rounded-xl transition duration-200"
+                >
+                  Connect Stellar Wallet
+                </button>
+              </div>
+            )}
+          </section>
+        )}
+
+        {currentView === "verifier" && (
+          <section className="py-12 max-w-4xl mx-auto px-4 w-full">
+            <div className="mb-10 text-center">
+              <span className="text-xs font-mono font-bold uppercase tracking-widest text-blue-400 bg-blue-950/40 border border-blue-900/50 px-3 py-1.5 rounded-full">
+                Auditor Verification Portal
+              </span>
+              <h2 className="text-3xl font-extrabold text-white mt-4 mb-2">
+                Stellar Soroban Proof Auditor
+              </h2>
+              <p className="text-slate-400">
+                Instantly execute on-chain BN254 host parameters. Verify physical
+                asset solvency without ever learning identities.
+              </p>
             </div>
+
+            <div className="rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/50 to-zinc-950/50 p-1 shadow-2xl shadow-black/40">
+              <div className="rounded-[14px] bg-black/20 p-5 sm:p-6">
+                <VerifierMode />
+              </div>
+            </div>
+          </section>
+        )}
+      </main>
+
+      {/* Global Footer */}
+      <footer className="mt-auto border-t border-slate-900 bg-slate-950/80 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="text-center md:text-left">
+            <span className="text-sm font-bold text-white">
+              zkCred — Cryptographic Proof of Funds
+            </span>
+            <p className="text-xs text-slate-500 mt-1">
+              Stellar Global Hacker Series Submission.
+            </p>
           </div>
-          <div className="hidden items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-zinc-400 sm:flex">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Stellar Testnet
+          <div className="flex space-x-6 text-xs text-slate-500">
+            <a href="#" className="hover:text-slate-300">
+              Architecture Specs
+            </a>
+            <a href="#" className="hover:text-slate-300">
+              Soroban Verifier Source
+            </a>
+            <a href="#" className="hover:text-slate-300">
+              Noir Circuit Schema
+            </a>
           </div>
         </div>
-
-        {/* Tabs */}
-        <div className="mb-6 flex justify-center">
-          <TabSwitch active={tab} onChange={setTab} />
-        </div>
-
-        {/* Content */}
-        <div className="rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/50 to-zinc-950/50 p-1 shadow-2xl shadow-black/40">
-          <div className="rounded-[14px] bg-black/20 p-5 sm:p-6">
-            {tab === "prover" ? <ProverMode /> : <VerifierMode />}
-          </div>
-        </div>
-
-        <p className="mt-6 text-center text-xs text-zinc-600">
-          Built for the Stellar Real-World ZK hackathon · No balance data leaves your
-          device
-        </p>
-      </div>
+      </footer>
     </div>
   );
 }
