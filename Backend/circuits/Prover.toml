@@ -1,0 +1,29 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# zkCred — Prover Input File
+# Used by: `nargo prove` and the frontend SDK to generate a proof
+#
+# PRIVATE inputs (never sent to any server):
+#   balance — actual wallet balance in micro-units
+#             e.g. $42,318.96 USDC = 42318960000 (6 decimal places)
+#
+# PUBLIC inputs (embedded in the proof, visible to the on-chain verifier):
+#   threshold — minimum to prove (e.g. $5,000 = 5000000000)
+#   asset_id  — Poseidon hash of the asset code string "USDC"
+#   nonce     — random hex value, must be unique per proof submission
+# ─────────────────────────────────────────────────────────────────────────────
+
+# PRIVATE INPUT — replace with the real balance before generating a proof
+balance = "42318960000"
+
+# PUBLIC INPUTS — these are safe to share and are embedded in the proof
+
+# $5,000.00 USDC (6 decimal places: 5000 * 1_000_000 = 5_000_000_000)
+threshold = "5000000000"
+
+# Poseidon hash of the ASCII string "USDC" (computed off-chain)
+# Replace with the correct hash for your chosen asset
+asset_id  = "0x14f0d1c0b67fb52e8b8e81e73ff31b3a98ec7a7d2c3f0bc4e9e4c8a3d6f5b2e"
+
+# Unique nonce — regenerate this for every new proof submission
+# This prevents the same proof from being accepted on-chain twice
+nonce     = "0x3a7c9f2d5e1b4a8c6d0f3e7b2a5d9c1f4e8b3d6a0c7f2e5b9d4a1c8f3e6b0d"
