@@ -13,6 +13,8 @@ import {
   ExternalLink,
   Sparkles,
   AlertCircle,
+  AlertTriangle,
+  Terminal,
 } from "lucide-react";
 
 // -----------------------------------------------------------------------------
@@ -80,22 +82,25 @@ function ViewNavigation({
 }) {
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-zinc-950/80 border-b border-slate-800/80 transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
         {/* Brand Logo */}
         <div
           className="flex items-center space-x-3 cursor-pointer"
           onClick={() => onNavigate("home")}
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-blue-600 flex items-center justify-center shadow-lg shadow-emerald-500/10">
-            <Sparkles className="w-6 h-6 text-zinc-950 font-bold" />
+          <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-blue-600 flex items-center justify-center shadow-lg shadow-emerald-500/10">
+            <Sparkles className="w-5 sm:w-6 h-5 sm:h-6 text-zinc-950 font-bold" />
           </div>
-          <div>
-            <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+          <div className="hidden sm:block">
+            <span className="text-lg sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
               zkCred
             </span>
-            <span className="block text-[10px] text-emerald-400 font-mono tracking-widest uppercase">
+            <span className="block text-[9px] sm:text-[10px] text-emerald-400 font-mono tracking-widest uppercase">
               Stellar ZK Layer
             </span>
+          </div>
+          <div className="sm:hidden">
+            <span className="text-base font-extrabold tracking-tight text-white">zkCred</span>
           </div>
         </div>
 
@@ -134,24 +139,25 @@ function ViewNavigation({
         </nav>
 
         {/* Wallet Button */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4">
           <button
             onClick={onWalletToggle}
             className={`flex items-center ${
               walletConnected
                 ? "bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 text-slate-200"
                 : "bg-emerald-600 hover:bg-emerald-500 text-slate-900 font-extrabold"
-            } px-4 py-2 rounded-lg transition duration-200 text-sm font-medium`}
+            } px-3 sm:px-4 py-2.5 sm:py-2 rounded-lg transition duration-200 text-xs sm:text-sm font-medium`}
           >
             {walletConnected ? (
               <>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
-                <span className="font-mono text-sm">GC32...4K91</span>
+                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 mr-1 sm:mr-2 animate-pulse"></span>
+                <span className="font-mono text-xs sm:text-sm hidden xs:inline">GC32...4K91</span>
               </>
             ) : (
               <>
-                <Wallet className="w-4 h-4 mr-2" />
-                Connect Freighter
+                <Wallet className="w-3.5 sm:w-4 h-3.5 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Connect Freighter</span>
+                <span className="sm:hidden">Connect</span>
               </>
             )}
           </button>
@@ -166,22 +172,22 @@ function LandingHome({ onNavigate }: { onNavigate: (v: ViewKey) => void }) {
   return (
     <div className="relative">
       {/* Hero Section */}
-      <div className="relative py-20 lg:py-32 overflow-hidden">
+      <div className="relative py-12 sm:py-20 lg:py-32 overflow-hidden">
         {/* Glowing background accents */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none"></div>
         <div className="absolute top-1/3 left-1/4 w-[300px] h-[300px] bg-blue-500/10 blur-[100px] rounded-full pointer-events-none"></div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 text-center relative z-10">
           {/* Tech Badge */}
-          <div className="inline-flex items-center space-x-2 bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-full mb-6">
+          <div className="inline-flex items-center space-x-2 bg-slate-900/80 border border-slate-800 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full mb-4 sm:mb-6">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-            <span className="text-xs font-mono text-emerald-400 font-medium tracking-wide">
+            <span className="text-[10px] sm:text-xs font-mono text-emerald-400 font-medium tracking-wide">
               Stellar Protocol 25 BN254 Native
             </span>
           </div>
 
           {/* Hero Title */}
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-5xl mx-auto leading-none mb-6">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-5xl mx-auto leading-none mb-4 sm:mb-6">
             Prove Your Funds.
             <br />
             <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-500 bg-clip-text text-transparent">
@@ -454,163 +460,397 @@ function AssetDropdown({
   );
 }
 
+// -----------------------------------------------------------------------------
+// Prover Mode — Asset & Proof Configuration
+// -----------------------------------------------------------------------------
+
+// Asset configuration profiles. Each entry defines the ledger balance mock,
+// the slider range, step granularity, and display symbol.
+// TODO: Replace `balance` with a live Stellar Horizon API call:
+//   GET https://horizon-testnet.stellar.org/accounts/{walletAddress}
+const ASSET_CONFIGS = {
+  USDC: { balance: 12450.0,  min: 100,  max: 25000,  step: 100, symbol: '$', color: 'bg-indigo-400', label: 'USD Coin' },
+  EURC: { balance: 9800.0,   min: 100,  max: 20000,  step: 100, symbol: '€', color: 'bg-sky-400',    label: 'Euro Coin' },
+  XLM:  { balance: 45000.0,  min: 1000, max: 100000, step: 500, symbol: '*', color: 'bg-violet-400', label: 'Stellar Lumens' },
+} as const;
+
+type AssetKey = keyof typeof ASSET_CONFIGS;
+
+interface TerminalLog {
+  id: number;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+}
+
+// Long mock proof hex — mimics a real BN254 UltraPlonk 1,312-byte serialised proof.
+// TODO: Replace with the actual proof bytes returned by the Noir WASM prover.
+const MOCK_PROOF_HEX =
+  '0x3c9902f4a1b8e3d72c5f0a9b4e1d8c3f6a2b5e0d9c4f7a1b3e8d2c5f0a9b4' +
+  'e1d8c3f6a2b5e0d9c4f7a1b3e8d2c5f0a9b4e1d8c3f6a2b5e0d9c4f7a1b3e8' +
+  'd2c5f0a9b4e1d8c3f6a2b5e0d9c4f7a1b3e8d2c5f0a9b4e1d8c3f6a2b5e0d9' +
+  'c4f7a1b3e8d2c5f0a9b4e1d8c3f6a2b5e0d9c4f7a1b3e8d2c5f0a9b4e1d8c3' +
+  'f6a2b5e0d9c4f7a1b3e8d2c5f0a9b4e1d8c3f6a2b5e0d9c4f7a1b3e8d2c5f0' +
+  'a9b4e1d8c3f6a2b5e0d9c4f7a1b3e8d2c5f0a9b4e1d8c3f6a2b5e0d9c4f7a1';
+
+// Each entry defines a compiler log line and the millisecond offset at which
+// it is appended to the terminal.  Mimics a real ACIR + Barretenberg pipeline.
+// TODO: Stream real logs from the Noir WASM engine worker thread.
+const COMPILE_SEQUENCE: Array<{ message: string; type: TerminalLog['type']; delay: number }> = [
+  { message: '> Initializing noir-wasm-engine v0.31.0 ...', type: 'info', delay: 0 },
+  { message: '> Loading BN254 elliptic curve parameters ...', type: 'info', delay: 320 },
+  { message: '> Parsing circuit topology from ACIR bytecode ...', type: 'info', delay: 700 },
+  { message: '  [1/4] Constraint system analysis — 2,847 gates found.', type: 'info', delay: 1080 },
+  { message: '  [2/4] Resolving arithmetic gate constraints ...', type: 'info', delay: 1480 },
+  { message: '  [3/4] Generating optimised witness map ...', type: 'info', delay: 1860 },
+  { message: '  [4/4] ACIR compilation complete.', type: 'success', delay: 2260 },
+  { message: '> Initializing Barretenberg proving backend (UltraPlonk) ...', type: 'info', delay: 2620 },
+  { message: '> Injecting private witness: balance scalar ...', type: 'info', delay: 3020 },
+  { message: '  Threshold assertion: balance ≥ target  →  SATISFIED ✓', type: 'success', delay: 3400 },
+  { message: '> Computing proof π via UltraPlonk protocol ...', type: 'info', delay: 3800 },
+  { message: '  Generating structured reference string (SRS) ...', type: 'info', delay: 4120 },
+  { message: '  Commitment scheme: KZG10 polynomial commitments ...', type: 'info', delay: 4480 },
+  { message: '  Round 1 — Witness polynomial commitments committed.', type: 'info', delay: 4820 },
+  { message: '  Round 2 — Permutation argument grand product computed.', type: 'info', delay: 5120 },
+  { message: '  Round 3 — Quotient polynomial evaluated.', type: 'info', delay: 5440 },
+  { message: '  Proof synthesis complete. Output: 1,312 bytes.', type: 'success', delay: 5820 },
+  { message: '> Serialising proof artifact to hex encoding ...', type: 'info', delay: 6140 },
+  { message: '> ✓ Zero-knowledge proof package generated. Ready to export.', type: 'success', delay: 6520 },
+];
+
+// -----------------------------------------------------------------------------
+// Prover Mode Component
+// -----------------------------------------------------------------------------
+
 function ProverMode() {
-  const [asset, setAsset] = useState("USDC");
-  const [threshold, setThreshold] = useState("10,000");
-  const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
+  const [selectedAsset, setSelectedAsset] = useState<AssetKey>('USDC');
+  const [thresholdValue, setThresholdValue] = useState(5000);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [terminalLogs, setTerminalLogs] = useState<TerminalLog[]>([]);
+  const [generatedProof, setGeneratedProof] = useState('');
   const [copied, setCopied] = useState(false);
 
-  function generateProof() {
-    setStatus("loading");
-    setCopied(false);
-    setTimeout(() => setStatus("done"), 1900);
+  const terminalRef = useRef<HTMLDivElement>(null);
+  // Ref holds all active timeout IDs so we can cancel them safely on unmount.
+  const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  const config = ASSET_CONFIGS[selectedAsset];
+  const thresholdExceedsBalance = thresholdValue > config.balance;
+
+  // When the user switches assets, reset threshold to a sensible default
+  // (half of the mock ledger balance) and clear any previous compile output.
+  function handleAssetChange(asset: AssetKey) {
+    const newConfig = ASSET_CONFIGS[asset];
+    setSelectedAsset(asset);
+    setThresholdValue(Math.round(newConfig.balance / 2.5));
+    setTerminalLogs([]);
+    setGeneratedProof('');
   }
 
-  function copyProof() {
-    navigator.clipboard?.writeText(MOCK_PROOF).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1800);
+  // Auto-scroll the terminal body whenever a new log line is appended.
+  useEffect(() => {
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    }
+  }, [terminalLogs]);
+
+  // Cleanup all pending timeouts when the component unmounts to prevent
+  // setState calls on an unmounted component (memory-safe).
+  useEffect(() => {
+    return () => { timeoutsRef.current.forEach(clearTimeout); };
+  }, []);
+
+  function handleCompile() {
+    if (thresholdExceedsBalance || isGenerating) return;
+
+    // Cancel any in-flight timeouts from a previous run.
+    timeoutsRef.current.forEach(clearTimeout);
+    timeoutsRef.current = [];
+
+    setIsGenerating(true);
+    setTerminalLogs([]);
+    setGeneratedProof('');
+
+    // Schedule each terminal log line at its defined delay offset.
+    // TODO: Replace these timeouts with real messages streamed from the
+    //       Noir WASM worker thread running the Barretenberg prover.
+    COMPILE_SEQUENCE.forEach((entry, idx) => {
+      const t = setTimeout(() => {
+        setTerminalLogs(prev => [...prev, { id: idx, message: entry.message, type: entry.type }]);
+      }, entry.delay);
+      timeoutsRef.current.push(t);
+    });
+
+    // After the final log, unlock the UI and reveal the proof output.
+    const totalDuration = COMPILE_SEQUENCE[COMPILE_SEQUENCE.length - 1].delay + 900;
+    const finalTimeout = setTimeout(() => {
+      setIsGenerating(false);
+      setGeneratedProof(MOCK_PROOF_HEX);
+    }, totalDuration);
+    timeoutsRef.current.push(finalTimeout);
   }
+
+  function handleCopy() {
+    navigator.clipboard?.writeText(generatedProof).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  }
+
+  const logColor: Record<TerminalLog['type'], string> = {
+    info:    'text-slate-400',
+    success: 'text-emerald-400',
+    warning: 'text-yellow-400',
+    error:   'text-red-400',
+  };
 
   return (
-    <div className="grid gap-5">
-      {/* Wallet header */}
-      <div className="flex items-center justify-between rounded-xl border border-white/10 bg-gradient-to-br from-zinc-900/80 to-zinc-950/80 px-5 py-4 backdrop-blur-xl">
-        <div className="flex items-center gap-3.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/10 ring-1 ring-inset ring-indigo-400/20">
-            <Wallet className="h-[18px] w-[18px] text-indigo-300" />
+    <div className="grid gap-6 grid-cols-1 md:grid-cols-5">
+
+      {/* =========================================================
+          LEFT — Parameters Control Panel  (3 / 5 columns)
+          ========================================================= */}
+      <div className="md:col-span-3 flex flex-col gap-5">
+
+        {/* Asset Selector */}
+        <div className="rounded-xl border border-[#1E293B] bg-[#161F30] p-5">
+          <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500">
+            Target Asset
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {(Object.keys(ASSET_CONFIGS) as AssetKey[]).map(asset => (
+              <button
+                key={asset}
+                type="button"
+                onClick={() => handleAssetChange(asset)}
+                className={`flex flex-col items-center gap-1.5 rounded-lg border py-3 px-2 text-center transition-all duration-200 ${
+                  selectedAsset === asset
+                    ? 'border-emerald-500/60 bg-emerald-500/[0.08] shadow-[0_0_12px_-4px_rgba(16,185,129,0.3)] text-emerald-300'
+                    : 'border-[#1E293B] bg-zinc-900/40 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                }`}
+              >
+                <span className={`h-2.5 w-2.5 rounded-full ${ASSET_CONFIGS[asset].color}`} />
+                <span className="text-sm font-bold tracking-tight">{asset}</span>
+                <span className="text-[10px] text-slate-500">{ASSET_CONFIGS[asset].label}</span>
+              </button>
+            ))}
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-sm font-medium text-zinc-100">
-                GC32...4K91
-              </span>
+        </div>
+
+        {/* Current Ledger Balance */}
+        <div className="rounded-xl border border-[#1E293B] bg-[#161F30] p-5">
+          <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500">
+            Ledger Balance (Mock)
+          </p>
+          <div className="flex items-baseline gap-3 rounded-lg border border-[#1E293B] bg-[#090D16] px-4 py-4">
+            <span
+              className="text-2xl font-bold tracking-tight text-white"
+              style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
+            >
+              {config.symbol}
+              {config.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+            <span className="text-sm text-slate-500">{selectedAsset}</span>
+            <span className="ml-auto flex items-center gap-1.5 text-xs text-emerald-400">
               <PulseDot color="emerald" />
-              <span className="text-xs font-medium text-emerald-400">Connected</span>
-            </div>
-            <p className="mt-0.5 text-xs text-zinc-500">Stellar mainnet · Freighter</p>
+              Live
+            </span>
           </div>
-        </div>
-        <div className="text-right">
-          <p className="text-[11px] uppercase tracking-wide text-zinc-500">Balance</p>
-          <p className="text-sm font-semibold text-zinc-100">42,318.96 USDC</p>
-        </div>
-      </div>
-
-      {/* Form card */}
-      <div className="rounded-xl border border-white/10 bg-zinc-900/40 p-5 backdrop-blur-xl">
-        <SectionLabel>Proof parameters</SectionLabel>
-
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-zinc-400">
-              Asset
-            </label>
-            <AssetDropdown value={asset} onChange={setAsset} />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-zinc-400">
-              Minimum threshold
-            </label>
-            <div className="relative">
-              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-zinc-500">
-                $
-              </span>
-              <input
-                value={threshold}
-                onChange={(e) => setThreshold(e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-zinc-900/60 py-3 pl-7 pr-3.5 text-sm font-medium text-zinc-100 transition-all duration-300 placeholder:text-zinc-600 hover:border-white/20 focus:border-indigo-400/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                placeholder="10,000"
-              />
-            </div>
-          </div>
+          <p className="mt-2 flex items-center gap-1 text-[11px] text-slate-600">
+            <Lock className="h-3 w-3" />
+            {/* TODO: Fetch real balance via Stellar Horizon API once Freighter is connected */}
+            Balance fetched client-side only — never transmitted to any server.
+          </p>
         </div>
 
-        <p className="mt-3 flex items-start gap-1.5 text-xs leading-relaxed text-zinc-500">
-          <Lock className="mt-0.5 h-3 w-3 flex-shrink-0" />
-          The exact balance is never revealed. The proof attests only that your
-          holdings exceed the stated threshold.
-        </p>
+        {/* Threshold Slider */}
+        <div className="rounded-xl border border-[#1E293B] bg-[#161F30] p-5">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500">
+              Threshold Assertion
+            </p>
+            <span
+              className="text-sm font-bold tabular-nums text-white"
+              style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
+            >
+              {config.symbol}{thresholdValue.toLocaleString()}
+            </span>
+          </div>
 
+          <input
+            type="range"
+            min={config.min}
+            max={config.max}
+            step={config.step}
+            value={thresholdValue}
+            onChange={e => setThresholdValue(Number(e.target.value))}
+            className="w-full h-1.5 cursor-pointer appearance-none rounded-full bg-[#1E293B] accent-emerald-500 outline-none"
+          />
+          <div className="mt-1.5 flex justify-between">
+            <span className="text-[10px] text-slate-600">
+              {config.symbol}{config.min.toLocaleString()}
+            </span>
+            <span className="text-[10px] text-slate-600">
+              {config.symbol}{config.max.toLocaleString()}
+            </span>
+          </div>
+
+          <p className="mt-3 flex items-start gap-1.5 text-[11px] leading-relaxed text-zinc-600">
+            <Lock className="mt-0.5 h-3 w-3 flex-shrink-0" />
+            The circuit proves balance ≥ threshold without revealing the exact figure.
+          </p>
+        </div>
+
+        {/* Defensive boundary warning */}
+        {thresholdExceedsBalance && (
+          <div className="flex items-start gap-3 rounded-xl border border-yellow-500/30 bg-yellow-500/[0.07] p-4 animate-in fade-in duration-300">
+            <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-400" />
+            <p className="text-sm leading-relaxed text-yellow-300">
+              <strong>Caution:</strong> Target threshold exceeds account balance.
+              Compilation circuit evaluation will fail!
+            </p>
+          </div>
+        )}
+
+        {/* Compile Button */}
         <button
           type="button"
-          onClick={generateProof}
-          disabled={status === "loading"}
-          className="group mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-[0_8px_24px_-8px_rgba(99,102,241,0.5)] transition-all duration-300 hover:shadow-[0_8px_28px_-6px_rgba(99,102,241,0.7)] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
+          onClick={handleCompile}
+          disabled={thresholdExceedsBalance || isGenerating}
+          className="flex w-full items-center justify-center gap-2.5 rounded-xl py-3.5 text-sm font-bold text-white transition-all duration-300
+            bg-gradient-to-r from-emerald-500 to-teal-600
+            shadow-[0_8px_24px_-6px_rgba(16,185,129,0.4)]
+            hover:brightness-110 hover:shadow-[0_8px_28px_-4px_rgba(16,185,129,0.5)] hover:-translate-y-0.5
+            disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-50 disabled:shadow-none"
         >
-          {status === "loading" ? (
+          {isGenerating ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Generating zero-knowledge proof…
+              Compiling Circuit…
             </>
           ) : (
             <>
-              <ShieldCheck className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
-              Generate ZK Proof
+              <ShieldCheck className="h-4 w-4" />
+              Compile &amp; Generate Proof
             </>
           )}
         </button>
       </div>
 
-      {/* Loading skeleton */}
-      {status === "loading" && (
-        <div className="rounded-xl border border-white/10 bg-zinc-900/40 p-5 backdrop-blur-xl">
-          <div className="flex items-center gap-2">
-            <div className="h-3 w-3 animate-pulse rounded-full bg-violet-500/60" />
-            <div className="h-2.5 w-40 animate-pulse rounded bg-white/10" />
-          </div>
-          <div className="mt-4 space-y-2">
-            <div className="h-2.5 w-full animate-pulse rounded bg-white/[0.06]" />
-            <div className="h-2.5 w-5/6 animate-pulse rounded bg-white/[0.06]" />
-            <div className="h-2.5 w-2/3 animate-pulse rounded bg-white/[0.06]" />
-          </div>
+      {/* =========================================================
+          RIGHT — On-Device Compiler Terminal Console  (2 / 5 cols)
+          ========================================================= */}
+      <div className="md:col-span-2 flex flex-col overflow-hidden rounded-xl border border-[#1E293B] bg-[#090D16]">
+        {/* macOS-style terminal chrome */}
+        <div className="flex items-center gap-2 border-b border-[#1E293B] bg-[#161F30] px-4 py-3">
+          <span className="h-3 w-3 rounded-full bg-red-500/80" />
+          <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
+          <span className="h-3 w-3 rounded-full bg-emerald-500/80" />
+          <span
+            className="ml-3 text-[11px] tracking-wide text-slate-500"
+            style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
+          >
+            noir-wasm-engine
+          </span>
+          {isGenerating && (
+            <span className="ml-auto flex items-center gap-1.5 text-[10px] text-emerald-400">
+              <PulseDot color="emerald" />
+              compiling
+            </span>
+          )}
+          {!isGenerating && generatedProof && (
+            <span className="ml-auto flex items-center gap-1.5 text-[10px] text-slate-500">
+              <Check className="h-3 w-3 text-emerald-400" />
+              done
+            </span>
+          )}
         </div>
-      )}
 
-      {/* Success state */}
-      {status === "done" && (
-        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 rounded-xl border border-emerald-400/20 bg-emerald-500/[0.06] p-5 backdrop-blur-xl">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/15 ring-1 ring-inset ring-emerald-400/30">
-              <Check className="h-3.5 w-3.5 text-emerald-400" />
-            </div>
-            <p className="text-sm font-semibold text-emerald-300">
-              Proof generated successfully
+        {/* Terminal body — scrollable, monospaced */}
+        <div
+          ref={terminalRef}
+          className="flex-1 min-h-[300px] max-h-[420px] space-y-1.5 overflow-y-auto p-4"
+          style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
+        >
+          {terminalLogs.length === 0 && !isGenerating && (
+            <p className="text-[12px] italic text-slate-600">
+              // Awaiting compilation trigger…
             </p>
-          </div>
-
-          <div className="mt-4 flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-black/40 px-3.5 py-3">
-            <code className="overflow-x-auto whitespace-nowrap text-xs text-zinc-400 font-mono">
-              {MOCK_PROOF}
-            </code>
-            <button
-              type="button"
-              onClick={copyProof}
-              className="flex flex-shrink-0 items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-xs font-medium text-zinc-300 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.08]"
+          )}
+          {terminalLogs.map(log => (
+            <p
+              key={log.id}
+              className={`text-[12px] leading-relaxed ${logColor[log.type]}`}
             >
-              {copied ? (
-                <>
-                  <Check className="h-3.5 w-3.5 text-emerald-400" />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="h-3.5 w-3.5" />
-                  Copy
-                </>
-              )}
-            </button>
-          </div>
+              {log.message}
+            </p>
+          ))}
+          {isGenerating && (
+            <span className="inline-block h-3.5 w-1.5 animate-pulse rounded-sm bg-emerald-400" />
+          )}
+        </div>
+      </div>
 
-          <p className="mt-3 text-xs text-zinc-500">
-            Share this proof string with any verifier. It carries no wallet
-            identity or balance data beyond the threshold attestation.
-          </p>
+      {/* =========================================================
+          PROOF OUTPUT — Full-width, fades in after compile
+          ========================================================= */}
+      {generatedProof && (
+        <div className="md:col-span-5 animate-in fade-in slide-in-from-bottom-3 duration-500">
+          <div className="rounded-xl border border-emerald-400/25 bg-gradient-to-br from-emerald-500/[0.07] to-[#161F30] p-5">
+
+            {/* Success alert banner */}
+            <div className="mb-5 flex items-center gap-3 border-b border-emerald-400/15 pb-4">
+              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/15 ring-1 ring-inset ring-emerald-400/30">
+                <ShieldCheck className="h-5 w-5 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-emerald-300">
+                  Zero-Knowledge Proof Package Generated
+                </p>
+                <p className="mt-0.5 text-[11px] text-slate-500">
+                  {/* TODO: Submit via Freighter signTransaction() to the Soroban verifier contract */}
+                  BN254 · UltraPlonk · 1,312 bytes · Share with verifier to attest balance threshold
+                </p>
+              </div>
+            </div>
+
+            {/* Copy row */}
+            <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500">
+                Proof Artifact (hex-encoded)
+              </p>
+              <button
+                type="button"
+                onClick={handleCopy}
+                className="flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.05] px-3.5 py-2 text-xs font-medium text-slate-300 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.09]"
+              >
+                {copied ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-emerald-400" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3.5 w-3.5" />
+                    Copy to Clipboard
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Read-only proof textarea */}
+            <textarea
+              readOnly
+              value={generatedProof}
+              rows={4}
+              className="w-full resize-none rounded-lg border border-[#1E293B] bg-[#090D16] px-4 py-3 text-xs text-emerald-400/80 focus:outline-none"
+              style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
+            />
+          </div>
         </div>
       )}
     </div>
   );
 }
+
 
 // -----------------------------------------------------------------------------
 // Verifier Mode
