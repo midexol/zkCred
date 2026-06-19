@@ -8,27 +8,18 @@ import {
   Check,
   ArrowRight,
   Lock,
-  ChevronDown,
   Loader2,
   ExternalLink,
   Sparkles,
   AlertCircle,
   AlertTriangle,
-  Terminal,
 } from "lucide-react";
 
 // -----------------------------------------------------------------------------
 // Static data
 // -----------------------------------------------------------------------------
 
-const ASSETS = [
-  { code: "USDC", name: "USD Coin", color: "bg-indigo-400" },
-  { code: "XLM", name: "Stellar Lumens", color: "bg-violet-400" },
-  { code: "EURC", name: "Euro Coin", color: "bg-sky-400" },
-];
 
-const MOCK_PROOF =
-  "zkp_v1.eyJjaXJjdWl0IjoicG9mLXRocmVzaG9sZCIsImNvbW1pdG1lbnQiOiI4ZjNhMmIxZTljNmQ0ZjVhIn0.9f2c8e1a4b7d3f6e0c5a8b2d1e4f7a9c3b6d0e8f2a5c7b1d9e3f6a0c4b8d2e5f.QmX7vK2pR8mT4nL9sJ6wF3hG1dC5bA0eY";
 
 const MOCK_TX_HASH =
   "7a3f9c1e6b4d8a2f5c0e9b3d7a1f4c8e2b6d0a9f3c7e1b5d8a2f6c0e4b9d3a7f";
@@ -61,6 +52,17 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
     </span>
   );
 }
+
+/* ── Keyframe injection ──────────────────────────────────────────────────── */
+const _fadeInUpStyle = (
+  <style>{`
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  `}</style>
+);
+/* ─────────────────────────────────────────────────────────────────────────── */
 
 // -----------------------------------------------------------------------------
 // Navigation and View Management
@@ -105,33 +107,33 @@ function ViewNavigation({
         </div>
 
         {/* Main Navigation Links */}
-        <nav className="hidden md:flex space-x-8 text-sm font-medium">
+        <nav className="hidden md:flex space-x-1 text-sm font-medium">
           <button
             onClick={() => onNavigate("home")}
-            className={`px-1 py-2 transition duration-150 ${
+            className={`px-3 py-2 rounded-lg transition-all duration-200 ${
               active === "home"
-                ? "text-emerald-400 border-b-2 border-emerald-500"
-                : "text-slate-400 hover:text-slate-200"
+                ? "text-emerald-400 bg-emerald-500/[0.08] border border-emerald-500/20"
+                : "text-slate-400 hover:text-slate-100 hover:bg-white/[0.04] hover:border-white/[0.06] border border-transparent"
             }`}
           >
             Home
           </button>
           <button
             onClick={() => onNavigate("prover")}
-            className={`px-1 py-2 transition duration-150 ${
+            className={`px-3 py-2 rounded-lg transition-all duration-200 ${
               active === "prover"
-                ? "text-emerald-400 border-b-2 border-emerald-500"
-                : "text-slate-400 hover:text-slate-200"
+                ? "text-emerald-400 bg-emerald-500/[0.08] border border-emerald-500/20"
+                : "text-slate-400 hover:text-slate-100 hover:bg-white/[0.04] hover:border-white/[0.06] border border-transparent"
             }`}
           >
             Prover Dashboard
           </button>
           <button
             onClick={() => onNavigate("verifier")}
-            className={`px-1 py-2 transition duration-150 ${
+            className={`px-3 py-2 rounded-lg transition-all duration-200 ${
               active === "verifier"
-                ? "text-emerald-400 border-b-2 border-emerald-500"
-                : "text-slate-400 hover:text-slate-200"
+                ? "text-emerald-400 bg-emerald-500/[0.08] border border-emerald-500/20"
+                : "text-slate-400 hover:text-slate-100 hover:bg-white/[0.04] hover:border-white/[0.06] border border-transparent"
             }`}
           >
             Auditor Portal
@@ -142,15 +144,19 @@ function ViewNavigation({
         <div className="flex items-center space-x-2 sm:space-x-4">
           <button
             onClick={onWalletToggle}
-            className={`flex items-center ${
+            className={`relative flex items-center transition-all duration-300 ${
               walletConnected
-                ? "bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 text-slate-200"
-                : "bg-emerald-600 hover:bg-emerald-500 text-slate-900 font-extrabold"
-            } px-3 sm:px-4 py-2.5 sm:py-2 rounded-lg transition duration-200 text-xs sm:text-sm font-medium`}
+                ? "bg-slate-800/80 hover:bg-slate-700/80 border border-emerald-500/30 hover:border-emerald-400/50 text-slate-200 shadow-[0_0_12px_rgba(16,185,129,0.12)] hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                : "bg-emerald-600 hover:bg-emerald-500 text-slate-900 font-extrabold hover:shadow-[0_0_20px_rgba(16,185,129,0.35)] hover:scale-[1.02]"
+            } px-3 sm:px-4 py-2.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium`}
           >
             {walletConnected ? (
               <>
-                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 mr-1 sm:mr-2 animate-pulse"></span>
+                {/* Pulsing green beacon glow */}
+                <span className="relative mr-1 sm:mr-2 flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                </span>
                 <span className="font-mono text-xs sm:text-sm hidden xs:inline">GC32...4K91</span>
               </>
             ) : (
@@ -171,8 +177,14 @@ function ViewNavigation({
 function LandingHome({ onNavigate }: { onNavigate: (v: ViewKey) => void }) {
   return (
     <div className="relative">
+      {/* Inject fadeInUp keyframe */}
+      {_fadeInUpStyle}
       {/* Hero Section */}
       <div className="relative py-12 sm:py-20 lg:py-32 overflow-hidden">
+        {/* Ambient radial glow — deepest layer */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="w-[700px] h-[700px] rounded-full bg-emerald-500/5 blur-[140px] animate-pulse" style={{ animationDuration: '4s' }} />
+        </div>
         {/* Glowing background accents */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none"></div>
         <div className="absolute top-1/3 left-1/4 w-[300px] h-[300px] bg-blue-500/10 blur-[100px] rounded-full pointer-events-none"></div>
@@ -187,7 +199,10 @@ function LandingHome({ onNavigate }: { onNavigate: (v: ViewKey) => void }) {
           </div>
 
           {/* Hero Title */}
-          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-5xl mx-auto leading-none mb-4 sm:mb-6">
+          <h1
+            className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-5xl mx-auto leading-none mb-4 sm:mb-6"
+            style={{ animation: 'fadeInUp 0.7s ease both 0.1s' }}
+          >
             Prove Your Funds.
             <br />
             <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-500 bg-clip-text text-transparent">
@@ -196,23 +211,29 @@ function LandingHome({ onNavigate }: { onNavigate: (v: ViewKey) => void }) {
           </h1>
 
           {/* Hero Subtitle */}
-          <p className="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed mb-10">
+          <p
+            className="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed mb-10"
+            style={{ animation: 'fadeInUp 0.7s ease both 0.25s' }}
+          >
             Zero-Knowledge compliance infrastructure for Stellar. Generate secure
             on-device balance proofs for landlords, creditors, or compliance audits
             without exposing your public key or history.
           </p>
 
           {/* Call to Action Buttons */}
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 max-w-md mx-auto">
+          <div
+            className="flex flex-col sm:flex-row justify-center items-center gap-4 max-w-md mx-auto"
+            style={{ animation: 'fadeInUp 0.7s ease both 0.4s' }}
+          >
             <button
               onClick={() => onNavigate("prover")}
-              className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold px-8 py-4 rounded-xl shadow-lg shadow-emerald-500/15 transition-all transform hover:-translate-y-0.5 duration-150"
+              className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold px-8 py-4 rounded-xl shadow-lg shadow-emerald-500/15 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_28px_rgba(16,185,129,0.35)] hover:scale-[1.02]"
             >
               Prove My Balance
             </button>
             <button
               onClick={() => onNavigate("verifier")}
-              className="w-full sm:w-auto bg-slate-900/90 hover:bg-slate-850 text-slate-200 border border-slate-800 hover:border-slate-700 font-bold px-8 py-4 rounded-xl transition-all transform hover:-translate-y-0.5 duration-150"
+              className="w-full sm:w-auto bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-800 hover:border-emerald-500/30 font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]"
             >
               Audit a Proof
             </button>
@@ -253,7 +274,7 @@ function LandingHome({ onNavigate }: { onNavigate: (v: ViewKey) => void }) {
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Red Flag Card */}
-            <div className="bg-slate-900/50 border border-red-950/50 rounded-2xl p-8 relative overflow-hidden">
+            <div className="group bg-slate-900/50 border border-red-950/50 hover:border-red-500/30 rounded-2xl p-8 relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(239,68,68,0.07)]">
               <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full blur-xl"></div>
               <span className="text-xs font-mono font-bold text-red-500 uppercase tracking-widest bg-red-950/40 px-3 py-1 rounded-md">
                 Traditional Method
@@ -286,7 +307,7 @@ function LandingHome({ onNavigate }: { onNavigate: (v: ViewKey) => void }) {
             </div>
 
             {/* Green Flag Card */}
-            <div className="bg-slate-900/50 border border-emerald-950/50 rounded-2xl p-8 relative overflow-hidden">
+            <div className="group bg-slate-900/50 border border-emerald-950/50 hover:border-emerald-500/30 rounded-2xl p-8 relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(16,185,129,0.07)]">
               <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl"></div>
               <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest bg-emerald-950/40 px-3 py-1 rounded-md">
                 zkCred Standard
@@ -341,12 +362,15 @@ function LandingHome({ onNavigate }: { onNavigate: (v: ViewKey) => void }) {
             <div className="hidden md:block absolute top-1/2 left-1/12 right-1/12 h-[2px] bg-gradient-to-r from-emerald-500/20 via-blue-500/20 to-slate-800 -translate-y-12 -z-10"></div>
 
             {/* Step 1 */}
-            <div className="bg-slate-900/30 border border-slate-800/80 rounded-2xl p-6 text-center hover:border-slate-700/80 transition duration-300">
-              <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center mx-auto mb-6 border border-slate-700 text-emerald-400 font-mono font-bold text-lg shadow-md shadow-emerald-500/5">
+            <div
+              className="group bg-slate-900/30 border border-slate-800/80 rounded-2xl p-6 text-center transition-all duration-300 hover:border-emerald-500/30 hover:-translate-y-1 hover:scale-[1.01] hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]"
+              style={{ animation: 'fadeInUp 0.6s ease both 0.1s' }}
+            >
+              <div className="w-12 h-12 rounded-xl bg-slate-800 group-hover:bg-emerald-500/10 flex items-center justify-center mx-auto mb-6 border border-slate-700 group-hover:border-emerald-500/30 text-emerald-400 font-mono font-bold text-lg shadow-md shadow-emerald-500/5 transition-all duration-300">
                 1
               </div>
               <h4 className="text-lg font-bold text-slate-100 mb-2">
-                Connect & Read Balance
+                Connect &amp; Read Balance
               </h4>
               <p className="text-sm text-slate-400">
                 Connect securely via Freighter. zkCred fetches your public token
@@ -355,8 +379,11 @@ function LandingHome({ onNavigate }: { onNavigate: (v: ViewKey) => void }) {
             </div>
 
             {/* Step 2 */}
-            <div className="bg-slate-900/30 border border-slate-800/80 rounded-2xl p-6 text-center hover:border-slate-700/80 transition duration-300">
-              <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center mx-auto mb-6 border border-slate-700 text-blue-400 font-mono font-bold text-lg shadow-md shadow-blue-500/5">
+            <div
+              className="group bg-slate-900/30 border border-slate-800/80 rounded-2xl p-6 text-center transition-all duration-300 hover:border-blue-500/30 hover:-translate-y-1 hover:scale-[1.01] hover:shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+              style={{ animation: 'fadeInUp 0.6s ease both 0.25s' }}
+            >
+              <div className="w-12 h-12 rounded-xl bg-slate-800 group-hover:bg-blue-500/10 flex items-center justify-center mx-auto mb-6 border border-slate-700 group-hover:border-blue-500/30 text-blue-400 font-mono font-bold text-lg shadow-md shadow-blue-500/5 transition-all duration-300">
                 2
               </div>
               <h4 className="text-lg font-bold text-slate-100 mb-2">
@@ -370,8 +397,11 @@ function LandingHome({ onNavigate }: { onNavigate: (v: ViewKey) => void }) {
             </div>
 
             {/* Step 3 */}
-            <div className="bg-slate-900/30 border border-slate-800/80 rounded-2xl p-6 text-center hover:border-slate-700/80 transition duration-300">
-              <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center mx-auto mb-6 border border-slate-700 text-teal-400 font-mono font-bold text-lg shadow-md shadow-teal-500/5">
+            <div
+              className="group bg-slate-900/30 border border-slate-800/80 rounded-2xl p-6 text-center transition-all duration-300 hover:border-teal-500/30 hover:-translate-y-1 hover:scale-[1.01] hover:shadow-[0_0_20px_rgba(20,184,166,0.1)]"
+              style={{ animation: 'fadeInUp 0.6s ease both 0.4s' }}
+            >
+              <div className="w-12 h-12 rounded-xl bg-slate-800 group-hover:bg-teal-500/10 flex items-center justify-center mx-auto mb-6 border border-slate-700 group-hover:border-teal-500/30 text-teal-400 font-mono font-bold text-lg shadow-md shadow-teal-500/5 transition-all duration-300">
                 3
               </div>
               <h4 className="text-lg font-bold text-slate-100 mb-2">
@@ -393,72 +423,9 @@ function LandingHome({ onNavigate }: { onNavigate: (v: ViewKey) => void }) {
 
 // Prover Mode
 // -----------------------------------------------------------------------------
-// Prover Mode
+// Prover Mode — Asset & Proof Configuration
+// (AssetDropdown removed — replaced by inline button-group selector in ProverMode)
 // -----------------------------------------------------------------------------
-
-function AssetDropdown({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const selected = ASSETS.find((a) => a.code === value)!;
-
-  useEffect(() => {
-    function onClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
-  }, []);
-
-  return (
-    <div className="relative" ref={ref}>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between gap-2 rounded-lg border border-white/10 bg-zinc-900/60 px-3.5 py-3 text-left text-sm text-zinc-100 transition-all duration-300 hover:border-white/20 focus:border-indigo-400/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-      >
-        <span className="flex items-center gap-2.5">
-          <span className={`h-2 w-2 rounded-full ${selected.color}`} />
-          <span className="font-medium">{selected.code}</span>
-          <span className="text-zinc-500">{selected.name}</span>
-        </span>
-        <ChevronDown
-          className={`h-4 w-4 text-zinc-500 transition-transform duration-300 ${
-            open ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-
-      {open && (
-        <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-lg border border-white/10 bg-zinc-900/95 shadow-2xl shadow-black/60 backdrop-blur-xl animate-in fade-in slide-in-from-top-1 duration-200">
-          {ASSETS.map((a) => (
-            <button
-              key={a.code}
-              type="button"
-              onClick={() => {
-                onChange(a.code);
-                setOpen(false);
-              }}
-              className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm text-zinc-200 transition-colors duration-150 hover:bg-white/[0.06]"
-            >
-              <span className={`h-2 w-2 rounded-full ${a.color}`} />
-              <span className="font-medium">{a.code}</span>
-              <span className="text-zinc-500">{a.name}</span>
-              {a.code === value && (
-                <Check className="ml-auto h-3.5 w-3.5 text-emerald-400" />
-              )}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 // -----------------------------------------------------------------------------
 // Prover Mode — Asset & Proof Configuration
