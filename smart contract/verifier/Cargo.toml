@@ -1,0 +1,29 @@
+[package]
+name        = "zkcred-verifier"
+version     = "1.0.0"
+edition     = "2021"
+description = "zkCred on-chain Groth16 verifier using Stellar BN254 host functions"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+soroban-sdk = { version = "22.0.0", features = ["alloc"] }
+
+[dev-dependencies]
+soroban-sdk = { version = "22.0.0", features = ["testutils"] }
+
+# ── Optimised WASM release build (required for Soroban size constraints) ──────
+[profile.release]
+opt-level        = "z"
+overflow-checks  = true
+debug            = 0
+strip            = "symbols"
+debug-assertions = false
+panic            = "abort"
+codegen-units    = 1
+lto              = true
+
+[profile.release-with-logs]
+inherits         = "release"
+debug-assertions = true
