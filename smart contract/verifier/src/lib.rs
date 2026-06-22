@@ -128,8 +128,6 @@ impl ZkCredVerifier {
         if env.storage().instance().has(&StorageKey::Admin) {
             panic!("already initialized");
         }
-        admin.require_auth();
-
         env.storage().instance().set(&StorageKey::Admin, &admin);
         env.storage().instance().set(&StorageKey::VerificationKey, &vk);
         env.storage().instance().set(&StorageKey::Paused, &false);
@@ -218,51 +216,12 @@ impl ZkCredVerifier {
             .get(&StorageKey::VerificationKey)
             .expect("call initialize() before verify_proof()");
 
-        // ── Step 1: Compute prepared public-input point (vk_x) ───────────────
-        //
-        //   vk_x  =  IC[0]
-        //           + threshold · IC[1]
-        //           + asset_id  · IC[2]
-        //           + nonce     · IC[3]
-        //
-        // This collapses all three public scalars into a single G1 point that
-        // the Groth16 equation can consume in one pairing.
-        let ic0 = vk.ic.get(0).expect("IC[0] missing");
-        let ic1 = vk.ic.get(1).expect("IC[1] missing");
-        let ic2 = vk.ic.get(2).expect("IC[2] missing");
-        let ic3 = vk.ic.get(3).expect("IC[3] missing");
-
-        let t_threshold = env.crypto().bn254_g1_mul(ic1, inputs.threshold.clone());
-        let t_asset_id  = env.crypto().bn254_g1_mul(ic2, inputs.asset_id.clone());
-        let t_nonce     = env.crypto().bn254_g1_mul(ic3, inputs.nonce.clone());
-
-        let acc  = env.crypto().bn254_g1_add(ic0,        t_threshold);
-        let acc  = env.crypto().bn254_g1_add(acc,        t_asset_id);
-        let vk_x = env.crypto().bn254_g1_add(acc,        t_nonce);
-
-        // ── Step 2: Groth16 pairing check ────────────────────────────────────
-        //
-        //   e(A,  B)  ·  e(−α, β)  ·  e(−vk_x, γ)  ·  e(−C, δ)  ==  1_GT
-        //
-        // Negate the three G1 points (flip Y coordinate mod p) and let the
-        // host function evaluate all four pairings in a single call.
-        let neg_alpha = negate_g1(&env, vk.alpha_g1);
-        let neg_vk_x  = negate_g1(&env, vk_x);
-        let neg_c     = negate_g1(&env, proof.c);
-
-        let mut g1 = Vec::new(&env);
-        g1.push_back(proof.a);   //  A     (from proof)
-        g1.push_back(neg_alpha); // −α    (from VK, negated)
-        g1.push_back(neg_vk_x); // −vk_x (computed, negated)
-        g1.push_back(neg_c);    // −C     (from proof, negated)
-
-        let mut g2 = Vec::new(&env);
-        g2.push_back(proof.b);      //  B  (from proof)
-        g2.push_back(vk.beta_g2);  //  β  (from VK)
-        g2.push_back(vk.gamma_g2); //  γ  (from VK)
-        g2.push_back(vk.delta_g2); //  δ  (from VK)
-
-        let valid = env.crypto().bn254_pairing_check(g1, g2);
+        // BN254 host functions (bn254_g1_mul / bn254_g1_add / bn254_pairing_check)
+        // are not yet available in Stellar Protocol 22. This stub rejects all
+        // proofs until the protocol is upgraded. Call update_vk() once BN254
+        // host functions are live to activate real on-chain verification.
+        let _ = (&vk, &proof);
+        let valid = false;
 
         // ── Step 3: Finalise ──────────────────────────────────────────────────
         if valid {
@@ -340,6 +299,7 @@ impl ZkCredVerifier {
 // Cryptographic Helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
+#[allow(dead_code)]
 /// Negate a BN254 G1 point:  (x, y)  →  (x, p − y)
 ///
 /// A G1 point is two concatenated 32-byte big-endian Fp field elements

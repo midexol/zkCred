@@ -1,0 +1,14 @@
+c:\Users\HP\Documents\GitHub\zkCred\smart contract\target\release\deps\serde-09766053d3386d7a.d: C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\lib.rs C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\integer128.rs C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\mod.rs C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\de.rs C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\ser.rs c:\Users\HP\Documents\GitHub\zkCred\smart\ contract\target\release\build\serde-2c4bc466a9cd2093\out/private.rs
+
+c:\Users\HP\Documents\GitHub\zkCred\smart contract\target\release\deps\libserde-09766053d3386d7a.rlib: C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\lib.rs C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\integer128.rs C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\mod.rs C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\de.rs C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\ser.rs c:\Users\HP\Documents\GitHub\zkCred\smart\ contract\target\release\build\serde-2c4bc466a9cd2093\out/private.rs
+
+c:\Users\HP\Documents\GitHub\zkCred\smart contract\target\release\deps\libserde-09766053d3386d7a.rmeta: C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\lib.rs C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\integer128.rs C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\mod.rs C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\de.rs C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\ser.rs c:\Users\HP\Documents\GitHub\zkCred\smart\ contract\target\release\build\serde-2c4bc466a9cd2093\out/private.rs
+
+C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\lib.rs:
+C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\integer128.rs:
+C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\mod.rs:
+C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\de.rs:
+C:\Users\HP\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\ser.rs:
+c:\Users\HP\Documents\GitHub\zkCred\smart\ contract\target\release\build\serde-2c4bc466a9cd2093\out/private.rs:
+
+# env-dep:OUT_DIR=c:\\Users\\HP\\Documents\\GitHub\\zkCred\\smart contract\\target\\release\\build\\serde-2c4bc466a9cd2093\\out
