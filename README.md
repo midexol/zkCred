@@ -1,5 +1,6 @@
 # zkCred — Privacy-Preserving Proof of Funds on Stellar
 
+
 > **Stellar Hacks: Real-World ZK** — Track: Real-World Use Cases, Compliance & Identity
 
 zkCred lets anyone cryptographically prove their wallet holds *at least* a minimum balance — without revealing their wallet address, exact balance, or transaction history. Auditors get a simple **TRUE / FALSE**. Everything else stays private.
