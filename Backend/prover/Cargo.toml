@@ -1,0 +1,42 @@
+[package]
+name    = "zkcred-prover"
+version = "0.1.0"
+edition = "2021"
+description = "zkCred arkworks Groth16 prover over BLS12-381 — produces proofs the Soroban verifier can check"
+
+[[bin]]
+name = "zkcred-prover"
+path = "src/main.rs"
+
+[dependencies]
+# ── Arkworks ZK stack ──────────────────────────────────────────────────────────
+ark-bls12-381 = { version = "0.4", features = ["curve"] }
+ark-groth16   = { version = "0.4", features = ["r1cs"] }
+ark-relations = "0.4"
+ark-r1cs-std  = "0.4"
+ark-ff        = "0.4"
+ark-ec        = "0.4"
+ark-serialize = { version = "0.4", features = ["derive"] }
+ark-std       = "0.4"
+
+# ── Randomness ─────────────────────────────────────────────────────────────────
+rand = "0.8"
+
+# ── Serialization ──────────────────────────────────────────────────────────────
+serde       = { version = "1", features = ["derive"] }
+serde_json  = "1"
+hex         = "0.4"
+anyhow      = "1"
+
+# ── HTTP API (local prover server mode) ──────────────────────────────────────
+actix-web  = "4"
+actix-cors = "0.7"
+tokio      = { version = "1", features = ["full"] }
+
+# ── CLI argument parsing ───────────────────────────────────────────────────────
+clap = { version = "4", features = ["derive"] }
+
+[profile.release]
+opt-level = 3
+lto       = true
+codegen-units = 1

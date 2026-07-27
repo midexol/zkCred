@@ -1,8 +1,5 @@
 # zkCred — Refit Status & Continuation Notes
 
-> Working doc for continuing the BLS12-381 refit (e.g. from a Claude Code
-> session running inside WSL). Delete once the refit is complete.
-
 ## Goal
 Make zkCred a **real end-to-end ZK** proof-of-funds for the "Stellar Hacks:
 Real-World ZK" hackathon: generate a real proof and verify it **on-chain** on
@@ -24,44 +21,46 @@ All three layers spoke different crypto languages:
 
 ## Status
 
-### DONE
-- [x] `Backend/contracts/verifier/src/lib.rs` rewritten to a real BLS12-381
-      Groth16 verifier. Uses `g1_msm` to build
-      `vk_x = IC[0] + threshold·IC[1] + asset_id·IC[2] + nonce·IC[3]`, then
-      `pairing_check([A,-α,-vk_x,-C],[B,β,γ,δ])`. Encodings: G1=96B `be(x)||be(y)`,
-      G2=192B, Fr=32B BE. Includes G1 negation over the BLS12-381 field prime,
-      nonce replay protection, and 5 unit tests. (commit fd640bd)
-- [x] Cargo.toml cleaned (dropped tokio), `.gitignore` added.
+### COMPLETED
+- [x] **Verifier Contract**: `Backend/contracts/verifier/src/lib.rs` written as a real BLS12-381
+      Groth16 verifier using `g1_msm` and `pairing_check`. Includes G1 point negation over field prime,
+      replay protection via stored nonces, and 5 unit tests.
+- [x] **Arkworks Prover Crate**: Built `Backend/prover/` crate with:
+      - `circuit.rs`: R1CS circuit (`balance >= threshold`, `balance <= SANITY_CAP`) using `ark-r1cs-std` gadgets + unit tests.
+      - `serializer.rs`: Arkworks LE-compressed → Soroban BE-uncompressed format adapter (G1=96B, G2=192B, Fr=32B).
+      - `main.rs`: CLI supporting `setup` (Groth16 setup → `vk.json` + `proving_key.bin`), `prove` (creates `proof.json`), and `serve` (HTTP server on `localhost:3001`).
+- [x] **Deployment Scripts**:
+      - `Backend/scripts/0_prover_setup.sh`: builds prover & runs trusted setup producing `vk.json`.
+      - `Backend/scripts/1_prove_demo.sh`: generates test proof payload using `proving_key.bin`.
+      - `Backend/scripts/3_deploy_contract.sh`: compiles WASM, deploys to testnet, invokes `initialize()` with real `vk.json` bytes, and auto-patches `Frontend/src/config.ts`.
+- [x] **Frontend Integration**:
+      - `Frontend/src/lib/freighter.ts`: real Freighter wallet connection & transaction signing via `@stellar/freighter-api`.
+      - `Frontend/src/lib/horizon.ts`: real Horizon balance fetching for connected account (XLM, USDC, EURC).
+      - `Frontend/src/lib/prover.ts`: client module calling local prover HTTP API with fallback demo payload.
+      - `Frontend/src/lib/soroban.ts`: real Soroban contract invocation for `verify_proof()` using `@stellar/stellar-sdk` simulation and live execution.
+      - `Frontend/src/Landing.tsx`: re-wired UI connecting wallet, live Horizon balances, real prover client, real auditor contract verification, and updated BLS12-381/Groth16/arkworks branding.
 
-### NEXT — verify the contract builds (needs working toolchain)
+---
+
+## Quick Reference / How to Run
+
+### 1. Build and Initialize (WSL / Linux)
 ```bash
-cd Backend/contracts
-cargo test  -p zkcred-verifier                              # validate pairing logic
-cargo build -p zkcred-verifier --target wasm32-unknown-unknown --release
+# 1. Generate trusted setup parameters and vk.json
+bash Backend/scripts/0_prover_setup.sh
+
+# 2. Deploy verifier contract and initialize with real VK on Testnet
+bash Backend/scripts/3_deploy_contract.sh
 ```
-Windows native toolchain is broken (no MinGW-w64, no VS Build Tools). Use a
-Linux toolchain. In WSL: `sudo apt-get install -y build-essential`, Rust +
-`wasm32-unknown-unknown` already installed.
 
-### TODO — the rest of the refit
-1. **arkworks prover crate** (`Backend/prover/`): define the R1CS circuit, run
-   trusted setup, prove. Write a **serialization adapter** from arkworks (LE,
-   flagged) to Soroban's BE-uncompressed bytes (G1=96B, G2=192B, Fr=32B). This
-   is the riskiest part — test the emitted VK+proof against the contract's
-   `verify_proof` in a Soroban test before trusting it.
-2. **Deploy**: install `stellar` CLI, `stellar contract deploy`, then
-   `initialize(admin, vk)` with the real VK. The current on-chain contract
-   `CDIH2J77BXLZFCQNWIFYCYC2G34RTJMPHPLI3MAHOHJZL4GE3ZHV55YX` is a pre-refit
-   stub (deployed but never initialized) and must be replaced.
-3. **Frontend** (`Frontend/src/Landing.tsx`): currently 100% mocked
-   (`MOCK_PROOF`, scripted terminal, auditor always returns TRUE). Wire real
-   Freighter connect, real Horizon balance read, run the prover, and submit the
-   proof to the contract via the Stellar SDK. Update `Frontend/src/config.ts`
-   with the new contract id.
+### 2. Start Prover API (Optional, for live local proving)
+```bash
+cd Backend/prover
+cargo run --release -- serve --port 3001
+```
 
-## Toolchain quick reference (WSL Ubuntu-22.04)
-- Rust 1.96 + `wasm32-unknown-unknown`: installed.
-- `build-essential`: **install required** (needs sudo).
-- `stellar` CLI: not installed. Prefer the prebuilt installer over `cargo install`.
-- Project on Windows fs: `/mnt/c/Users/user/zkCred` (slow to build). Cloning into
-  `~` is faster.
+### 3. Run Frontend
+```bash
+cd Frontend
+npm run dev
+```

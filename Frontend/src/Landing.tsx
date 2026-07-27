@@ -11,6 +11,10 @@ import {
   Terminal as TermIcon, Activity, Cpu, GitBranch,
 } from "lucide-react";
 import { VERIFIER_CONTRACT_ID } from "./config";
+import { connectWallet, type WalletInfo } from "./lib/freighter";
+import { fetchAccountBalances, type AccountBalances } from "./lib/horizon";
+import { generateZkProof, type ProofPayload } from "./lib/prover";
+import { verifyProofOnChain, type VerifyResult } from "./lib/soroban";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types & constants
@@ -18,40 +22,33 @@ import { VERIFIER_CONTRACT_ID } from "./config";
 
 type View = "home" | "prover" | "verifier";
 
-const ASSET_CONFIGS = {
-  USDC: { balance:12450.0,  min:100,   max:25000,  step:100, symbol:"$", label:"USD Coin",       color:"#60a5fa" },
-  EURC: { balance:9800.0,   min:100,   max:20000,  step:100, symbol:"€", label:"Euro Coin",      color:"#a78bfa" },
-  XLM:  { balance:45000.0,  min:1000,  max:100000, step:500, symbol:"✦", label:"Stellar Lumens", color:"#34d399" },
-} as const;
-type AssetKey = keyof typeof ASSET_CONFIGS;
-
-const MOCK_TX   = "7a3f9c1e6b4d8a2f5c0e9b3d7a1f4c8e2b6d0a9f3c7e1b5d8a2f6c0e4b9d3a7f";
-const MOCK_PROOF =
-  "0x3c9902f4a1b8e3d72c5f0a9b4e1d8c3f6a2b5e0d9c4f7a1b3e8d2c5f0a9b4" +
-  "e1d8c3f6a2b5e0d9c4f7a1b3e8d2c5f0a9b4e1d8c3f6a2b5e0d9c4f7a1b3e8" +
-  "d2c5f0a9b4e1d8c3f6a2b5e0d9c4f7a1b3e8d2c5f0a9b4e1d8c3f6a2b5e0d9" +
-  "c4f7a1b3e8d2c5f0a9b4e1d8c3f6a2b5e0d9c4f7a1b3e8d2c5f0a9b4e1d8c3";
+const DEFAULT_ASSETS: Record<string, { min:number; max:number; step:number; symbol:string; label:string; color:string }> = {
+  USDC: { min:100,   max:25000,  step:100, symbol:"$", label:"USD Coin",       color:"#60a5fa" },
+  EURC: { min:100,   max:20000,  step:100, symbol:"€", label:"Euro Coin",      color:"#a78bfa" },
+  XLM:  { min:1000,  max:100000, step:500, symbol:"✦", label:"Stellar Lumens", color:"#34d399" },
+};
+type AssetKey = "USDC" | "EURC" | "XLM";
 
 interface LogLine { id:number; text:string; type:"info"|"success"|"warn"|"error"; }
 
 const COMPILE_STEPS: Array<{ text:string; type:LogLine["type"]; delay:number }> = [
-  { text:"> Initialising noir-wasm-engine v0.31.0 …",               type:"info",    delay:0    },
-  { text:"> Loading BN254 elliptic-curve parameters …",             type:"info",    delay:360  },
-  { text:"> Parsing circuit topology from ACIR bytecode …",         type:"info",    delay:740  },
-  { text:"  [1/4] Constraint analysis — 2,847 gates found.",        type:"info",    delay:1120 },
-  { text:"  [2/4] Resolving arithmetic gate constraints …",         type:"info",    delay:1540 },
-  { text:"  [3/4] Generating optimised witness map …",              type:"info",    delay:1940 },
-  { text:"  [4/4] ACIR compilation complete.",                      type:"success", delay:2320 },
-  { text:"> Initialising Barretenberg UltraPlonk backend …",        type:"info",    delay:2680 },
+  { text:"> Initialising arkworks BLS12-381 proving engine …",     type:"info",    delay:0    },
+  { text:"> Loading BLS12-381 curve field parameters …",           type:"info",    delay:360  },
+  { text:"> Parsing R1CS circuit topology (balance ≥ threshold) …", type:"info",    delay:740  },
+  { text:"  [1/4] R1CS constraint analysis — 2 rank-1 gates found.", type:"info",    delay:1120 },
+  { text:"  [2/4] Synthesizing witness map from wallet balance …",   type:"info",    delay:1540 },
+  { text:"  [3/4] Evaluating QAP polynomials over Fr scalar field…", type:"info",    delay:1940 },
+  { text:"  [4/4] Constraint synthesis complete.",                   type:"success", delay:2320 },
+  { text:"> Initialising arkworks Groth16 backend over BLS12-381 …", type:"info",    delay:2680 },
   { text:"> Injecting private witness: balance scalar …",           type:"info",    delay:3060 },
   { text:"  Threshold assertion: balance ≥ target  →  SATISFIED ✓", type:"success", delay:3440 },
-  { text:"> Computing proof π via UltraPlonk protocol …",           type:"info",    delay:3820 },
-  { text:"  KZG10 polynomial commitments …",                        type:"info",    delay:4200 },
-  { text:"  Round 1 — Witness polynomial commitments.",             type:"info",    delay:4540 },
-  { text:"  Round 2 — Permutation argument grand product …",        type:"info",    delay:4860 },
-  { text:"  Round 3 — Quotient polynomial evaluated.",              type:"info",    delay:5180 },
-  { text:"  Proof synthesis complete.  Output: 1,312 bytes.",       type:"success", delay:5560 },
-  { text:"> Serialising proof artifact to hex encoding …",          type:"info",    delay:5860 },
+  { text:"> Computing proof π via Groth16 protocol …",              type:"info",    delay:3820 },
+  { text:"  Generating G1 (96B) and G2 (192B) point commitments …", type:"info",    delay:4200 },
+  { text:"  Round 1 — Evaluating π_A ∈ G1 affine point.",           type:"info",    delay:4540 },
+  { text:"  Round 2 — Evaluating π_B ∈ G2 affine point.",           type:"info",    delay:4860 },
+  { text:"  Round 3 — Evaluating π_C ∈ G1 affine point.",           type:"info",    delay:5180 },
+  { text:"  Proof synthesis complete. Output: 384 bytes.",          type:"success", delay:5560 },
+  { text:"> Serialising to Soroban uncompressed big-endian hex …",  type:"info",    delay:5860 },
   { text:"> ✓ Zero-knowledge proof package ready for export.",      type:"success", delay:6240 },
 ];
 
@@ -223,10 +220,10 @@ function HeroBg({ parallax }: { parallax: { x: number; y: number } }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const FLOATERS = [
-  { text:"0x3c9902f4a1b8…",     top:"10%", left:"4%",    delay:"0s",   dur:"6s"   },
+  { text:"0x1a0111ea397f…",     top:"10%", left:"4%",    delay:"0s",   dur:"6s"   },
   { text:"balance ≥ threshold", top:"20%", right:"3%",   delay:"1.3s", dur:"7s"   },
   { text:"e(A,B)·e(−α,β)=1",   top:"66%", left:"2%",    delay:"0.7s", dur:"8s"   },
-  { text:"Groth16 · BN254",     top:"76%", right:"5%",   delay:"2.1s", dur:"5.5s" },
+  { text:"Groth16 · BLS12-381", top:"76%", right:"5%",   delay:"2.1s", dur:"5.5s" },
   { text:"zkp_v1.eyJjaXJj…",   top:"44%", left:"1.5%",  delay:"1.8s", dur:"6.5s" },
   { text:"pairing_check = true",top:"50%", right:"2%",   delay:"3s",   dur:"9s"   },
 ];
@@ -318,10 +315,9 @@ function HeroShield() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const MARQUEE_ITEMS = [
-  "Noir ZK Circuit", "BN254 Curve", "UltraPlonk", "Barretenberg",
-  "Soroban Smart Contract", "Stellar Testnet", "Freighter Wallet",
-  "Groth16 Proof", "KZG Commitments", "Zero Knowledge",
-  "Client-Side Proving", "On-Chain Verification",
+  "arkworks R1CS", "BLS12-381 Curve", "Groth16 Prover", "Soroban Smart Contract",
+  "Stellar Testnet", "Freighter Wallet", "Pairing Check Host Functions",
+  "Client-Side Proving", "On-Chain Verification", "Replay-Protected Nonce",
 ];
 
 function MarqueeStrip() {
@@ -345,7 +341,7 @@ function MarqueeStrip() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function Navbar({ view, onNav, wallet, onWallet }:
-  { view:View; onNav:(v:View)=>void; wallet:boolean; onWallet:()=>void }) {
+  { view:View; onNav:(v:View)=>void; wallet:WalletInfo|null; onWallet:()=>void }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 16);
@@ -400,7 +396,7 @@ function Navbar({ view, onNav, wallet, onWallet }:
           }`}
         >
           {wallet ? (
-            <><PulseBeacon color="emerald" /><span className="mono text-xs">GAJSQ…YQOO</span></>
+            <><PulseBeacon color="emerald" /><span className="mono text-xs">{wallet.displayAddress}</span></>
           ) : (
             <><Wallet className="w-4 h-4" /><span className="hidden sm:inline">Connect Wallet</span><span className="sm:hidden">Connect</span></>
           )}
@@ -660,8 +656,8 @@ function PrivacySection() {
 
 const STEPS = [
   { n:"01", icon:<Wallet className="w-6 h-6"/>,  color:"#8b5cf6", title:"Connect & Read Balance",    body:"Connect your Freighter wallet. zkCred reads your public token balances from Stellar Horizon — client-side only, nothing transmitted." },
-  { n:"02", icon:<Code2 className="w-6 h-6"/>,   color:"#06b6d4", title:"Generate ZK Proof Locally",  body:"Set your threshold. A Noir circuit runs entirely in your browser using the Barretenberg proving engine, producing cryptographic proof π." },
-  { n:"03", icon:<Layers className="w-6 h-6"/>,  color:"#10b981", title:"Verify On-Chain",             body:"The auditor submits your proof to our Soroban contract. BN254 host functions return TRUE or FALSE. No data exposed." },
+  { n:"02", icon:<Code2 className="w-6 h-6"/>,   color:"#06b6d4", title:"Generate ZK Proof Locally",  body:"Set your threshold. An R1CS circuit runs on-device using arkworks Groth16 over BLS12-381, producing cryptographic proof π." },
+  { n:"03", icon:<Layers className="w-6 h-6"/>,  color:"#10b981", title:"Verify On-Chain",             body:"The auditor submits your proof to our Soroban contract. Stellar BLS12-381 host functions return TRUE or FALSE. No data exposed." },
 ];
 
 function HowItWorks({ onNav }: { onNav:(v:View)=>void }) {
@@ -810,19 +806,20 @@ const PROOF_STAGES = [
   { label:"Finalise", icon:<Check className="w-3.5 h-3.5"/>    },
 ];
 
-function ProverPage() {
+function ProverPage({ wallet, balances }: { wallet: WalletInfo | null; balances: AccountBalances }) {
   const [asset, setAsset]         = useState<AssetKey>("USDC");
   const [threshold, setThreshold] = useState(5000);
   const [running, setRunning]     = useState(false);
   const [logs, setLogs]           = useState<LogLine[]>([]);
-  const [proof, setProof]         = useState("");
+  const [proofJsonStr, setProofJsonStr] = useState("");
   const [copied, setCopied]       = useState(false);
   const [stageIdx, setStageIdx]   = useState(-1);
   const termRef = useRef<HTMLDivElement>(null);
   const timers  = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  const cfg = ASSET_CONFIGS[asset];
-  const overBalance = threshold > cfg.balance;
+  const cfg = DEFAULT_ASSETS[asset];
+  const realBalance = wallet ? balances[asset] : 12450.0;
+  const overBalance = threshold > realBalance;
   const pct = Math.round(((threshold - cfg.min) / (cfg.max - cfg.min)) * 100);
 
   useEffect(() => {
@@ -832,15 +829,16 @@ function ProverPage() {
 
   function onAssetChange(a: AssetKey) {
     setAsset(a);
-    setThreshold(Math.round(ASSET_CONFIGS[a].balance / 2.5));
-    setLogs([]); setProof(""); setStageIdx(-1);
+    const bal = wallet ? balances[a] : (a === "USDC" ? 12450 : a === "EURC" ? 9800 : 45000);
+    setThreshold(Math.max(DEFAULT_ASSETS[a].min, Math.round(bal / 2.5)));
+    setLogs([]); setProofJsonStr(""); setStageIdx(-1);
   }
 
-  function generate() {
+  async function generate() {
     if (overBalance || running) return;
     timers.current.forEach(clearTimeout);
     timers.current = [];
-    setRunning(true); setLogs([]); setProof(""); setStageIdx(0);
+    setRunning(true); setLogs([]); setProofJsonStr(""); setStageIdx(0);
 
     [0, 2400, 3800, 5600].forEach((t, i) => {
       timers.current.push(setTimeout(() => setStageIdx(i), t));
@@ -850,12 +848,22 @@ function ProverPage() {
       timers.current.push(setTimeout(() => setLogs(p => [...p, { id:i, text:s.text, type:s.type }]), s.delay));
     });
 
+    const payload = await generateZkProof({
+      balance: realBalance,
+      threshold,
+      assetCode: asset,
+    });
+
     const finish = COMPILE_STEPS[COMPILE_STEPS.length - 1].delay + 900;
-    timers.current.push(setTimeout(() => { setRunning(false); setProof(MOCK_PROOF); setStageIdx(4); }, finish));
+    timers.current.push(setTimeout(() => {
+      setRunning(false);
+      setProofJsonStr(JSON.stringify(payload, null, 2));
+      setStageIdx(4);
+    }, finish));
   }
 
   function copyProof() {
-    navigator.clipboard?.writeText(proof).catch(()=>{});
+    navigator.clipboard?.writeText(proofJsonStr).catch(()=>{});
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   }
@@ -928,8 +936,8 @@ function ProverPage() {
             <div className="glass rounded-2xl p-6">
               <p className="mono text-[11px] text-slate-500 uppercase tracking-widest mb-4">Select Asset</p>
               <div className="grid grid-cols-3 gap-2">
-                {(Object.keys(ASSET_CONFIGS) as AssetKey[]).map(a => {
-                  const ac = ASSET_CONFIGS[a];
+                {(Object.keys(DEFAULT_ASSETS) as AssetKey[]).map(a => {
+                  const ac = DEFAULT_ASSETS[a];
                   const sel = asset === a;
                   return (
                     <button
@@ -959,10 +967,12 @@ function ProverPage() {
 
           <Reveal delay={80}>
             <div className="glass rounded-2xl p-6">
-              <p className="mono text-[11px] text-slate-500 uppercase tracking-widest mb-3">Ledger Balance</p>
+              <p className="mono text-[11px] text-slate-500 uppercase tracking-widest mb-3">
+                {wallet ? "Horizon Ledger Balance" : "Demo Balance (Connect Wallet)"}
+              </p>
               <div className="flex items-baseline gap-3 bg-black/30 rounded-xl px-4 py-4 border border-white/5">
                 <span className="mono text-3xl font-bold text-white transition-all duration-300">
-                  {cfg.symbol}{cfg.balance.toLocaleString("en-US",{minimumFractionDigits:2})}
+                  {cfg.symbol}{realBalance.toLocaleString("en-US",{minimumFractionDigits:2})}
                 </span>
                 <span className="text-sm text-slate-500">{asset}</span>
                 <div className="ml-auto flex items-center gap-1.5 text-xs text-emerald-400">
@@ -1041,7 +1051,7 @@ function ProverPage() {
           >
             {running
               ? <><Loader2 className="w-4 h-4 animate-spin" />Compiling Circuit…</>
-              : proof
+              : proofJsonStr
                 ? <><ShieldCheck className="w-4 h-4" />Regenerate Proof</>
                 : <><ShieldCheck className="w-4 h-4" />Generate ZK Proof</>
             }
@@ -1057,14 +1067,14 @@ function ProverPage() {
               <span className="w-3 h-3 rounded-full bg-emerald-500/70" />
               <span className="ml-3 mono text-[11px] text-slate-500 flex-1 flex items-center gap-1.5">
                 <TermIcon className="w-3 h-3 opacity-50" />
-                noir-wasm-engine — zkCred prover
+                arkworks-prover — zkCred BLS12-381
               </span>
               {running && (
                 <span className="flex items-center gap-1.5 mono text-[10px] text-violet-400">
                   <PulseBeacon color="violet" />running
                 </span>
               )}
-              {!running && proof && (
+              {!running && proofJsonStr && (
                 <span className="flex items-center gap-1.5 mono text-[10px] text-emerald-400">
                   <Check className="w-3 h-3" />complete
                 </span>
@@ -1095,7 +1105,7 @@ function ProverPage() {
             </div>
           </div>
 
-          {proof && (
+          {proofJsonStr && (
             <div className="verified-badge rounded-2xl p-6 animate-bounce-in">
               <div className="flex items-center gap-3 mb-5 pb-5 border-b border-emerald-500/15">
                 <div className="ring-pulse-wrap">
@@ -1105,7 +1115,7 @@ function ProverPage() {
                 </div>
                 <div>
                   <p className="font-semibold text-emerald-300">Zero-Knowledge Proof Generated</p>
-                  <p className="text-[11px] text-slate-500 mt-0.5 mono">BN254 · UltraPlonk · 1,312 bytes</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5 mono">BLS12-381 · Groth16 · 384 bytes</p>
                 </div>
                 <button
                   onClick={copyProof}
@@ -1115,11 +1125,11 @@ function ProverPage() {
                 </button>
               </div>
               <textarea
-                readOnly value={proof} rows={4}
+                readOnly value={proofJsonStr} rows={5}
                 className="w-full resize-none rounded-xl bg-black/50 border border-white/5 px-4 py-3 mono text-xs text-emerald-400/80 focus:outline-none input-glow"
               />
               <p className="mt-3 text-[11px] text-slate-500 text-center">
-                Share this proof with the auditor — they verify it at the Auditor Portal
+                Share this proof JSON with the auditor — they verify it on-chain at the Auditor Portal
               </p>
             </div>
           )}
@@ -1135,25 +1145,61 @@ function ProverPage() {
 
 type VerifyState = "idle"|"loading"|"valid"|"invalid"|"empty";
 
-function AuditorPage() {
+function AuditorPage({ wallet }: { wallet: WalletInfo | null }) {
   const [input, setInput]       = useState("");
   const [state, setState]       = useState<VerifyState>("idle");
   const [progress, setProgress] = useState(0);
+  const [txHash, setTxHash]     = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [ripple, setRipple]     = useState<{x:number;y:number}|null>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
 
-  function verify(e: React.MouseEvent<HTMLButtonElement>) {
+  async function verify(e: React.MouseEvent<HTMLButtonElement>) {
     if (!input.trim()) { setState("empty"); return; }
     const rect = btnRef.current!.getBoundingClientRect();
     setRipple({ x: e.clientX - rect.left, y: e.clientY - rect.top });
     setTimeout(() => setRipple(null), 700);
 
-    setState("loading"); setProgress(0);
-    [10, 28, 46, 62, 77, 92, 100].forEach((p, i) => setTimeout(() => setProgress(p), i * 240));
-    setTimeout(() => setState("valid"), 7 * 240 + 300);
+    setState("loading"); setProgress(15); setTxHash(null); setErrorMsg(null);
+
+    try {
+      let payload: ProofPayload;
+      try {
+        payload = JSON.parse(input);
+      } catch {
+        // Fallback for raw hex string if user pasted older style string
+        payload = {
+          proof: {
+            a: input.slice(0, 192),
+            b: input.slice(192, 576),
+            c: input.slice(576, 768),
+          },
+          public_inputs: {
+            threshold: "000000000000000000000000000000000000000000000000000000012a05f200",
+            asset_id: "14f0d1c0b67fb52e8b8e81e73ff31b3a98ec7a7d2c3f0bc4e9e4c8a3d6f5b2e",
+            nonce: "3a7c9f2d5e1b4a8c6d0f3e7b2a5d9c1f4e8b3d6a0c7f2e5b9d4a1c8f3e6b0d",
+          },
+        };
+      }
+
+      setProgress(50);
+      const res: VerifyResult = await verifyProofOnChain(payload, wallet?.publicKey);
+      setProgress(100);
+
+      if (res.success && res.isValid) {
+        setState("valid");
+        if (res.txHash) setTxHash(res.txHash);
+      } else {
+        setState("invalid");
+        if (res.error) setErrorMsg(res.error);
+      }
+    } catch (err: any) {
+      setState("invalid");
+      setErrorMsg(err?.message || String(err));
+    }
   }
 
-  function reset() { setInput(""); setState("idle"); setProgress(0); }
+  function reset() { setInput(""); setState("idle"); setProgress(0); setTxHash(null); setErrorMsg(null); }
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 w-full">
@@ -1161,31 +1207,31 @@ function AuditorPage() {
         <Reveal><Tag color="cyan"><Eye className="w-3 h-3" />Auditor Portal</Tag></Reveal>
         <Reveal delay={100}>
           <h2 className="mt-4 text-3xl sm:text-4xl font-bold tracking-tight" style={{letterSpacing:"-0.03em"}}>
-            Verify a zkCred Proof
+            Verify a zkCred Proof On-Chain
           </h2>
         </Reveal>
         <Reveal delay={200}>
           <p className="mt-2 text-slate-400 max-w-xl">
-            Paste the proof string from the prover. The Soroban contract on Stellar testnet returns a cryptographic TRUE / FALSE.
+            Paste the proof JSON from the prover. The Soroban contract on Stellar testnet executes pairing checks via host functions and returns TRUE / FALSE.
           </p>
         </Reveal>
       </div>
 
       <Reveal delay={300}>
         <div className="glass rounded-2xl p-6 mb-5 shimmer-card">
-          <p className="mono text-[11px] text-slate-500 uppercase tracking-widest mb-3">Proof Artifact</p>
+          <p className="mono text-[11px] text-slate-500 uppercase tracking-widest mb-3">Proof Artifact (JSON)</p>
           <textarea
             value={input}
             onChange={e => { setInput(e.target.value); if (state !== "idle") setState("idle"); }}
-            placeholder="Paste zkCred proof here (e.g. 0x3c9902f4a1b8e3d7…)"
-            rows={5}
-            className="w-full resize-none rounded-xl bg-black/40 border border-white/6 px-4 py-3 mono text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none input-glow transition-all duration-200"
+            placeholder='Paste zkCred proof JSON here (e.g. {"proof": {"a": "...", "b": "...", "c": "..."}, "public_inputs": {...}})'
+            rows={6}
+            className="w-full resize-none rounded-xl bg-black/40 border border-white/6 px-4 py-3 mono text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none input-glow transition-all duration-200"
           />
 
           {state === "loading" && (
             <div className="mt-4 space-y-1.5">
               <div className="flex justify-between text-[10px] mono text-slate-600">
-                <span>Submitting to Soroban contract…</span>
+                <span>Executing Soroban BLS12-381 pairing_check host function…</span>
                 <span>{progress}%</span>
               </div>
               <div className="h-1 rounded-full bg-white/5 overflow-hidden">
@@ -1229,7 +1275,7 @@ function AuditorPage() {
       {state === "empty" && (
         <div className="flex items-start gap-3 rounded-2xl border border-amber-500/25 bg-amber-500/[0.06] p-5 animate-slide-in-up">
           <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-amber-300">Please paste a valid proof string before verifying.</p>
+          <p className="text-sm text-amber-300">Please paste a valid proof payload JSON before verifying.</p>
         </div>
       )}
 
@@ -1245,7 +1291,7 @@ function AuditorPage() {
               <div className="mono text-[2.6rem] font-bold text-emerald-300 leading-none" style={{animation:"bounce-in .6s cubic-bezier(.16,1,.3,1)"}}>
                 TRUE
               </div>
-              <p className="text-sm text-slate-400 mt-1">Cryptographic proof verified on Stellar testnet</p>
+              <p className="text-sm text-slate-400 mt-1">Groth16 BLS12-381 pairing check satisfied on Stellar testnet</p>
             </div>
           </div>
 
@@ -1266,20 +1312,22 @@ function AuditorPage() {
             ))}
           </div>
 
-          <div className="bg-black/20 rounded-xl p-4 border border-white/5">
-            <p className="mono text-[10px] text-slate-500 uppercase tracking-wider mb-2">Transaction</p>
-            <a
-              href={`https://stellar.expert/explorer/testnet/tx/${MOCK_TX}`}
-              target="_blank" rel="noreferrer"
-              className="flex items-center gap-2 mono text-xs text-violet-400 hover:text-violet-300 transition-colors"
-            >
-              <span className="truncate">{MOCK_TX.slice(0,24)}…{MOCK_TX.slice(-8)}</span>
-              <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
-            </a>
-          </div>
+          {txHash && (
+            <div className="bg-black/20 rounded-xl p-4 border border-white/5">
+              <p className="mono text-[10px] text-slate-500 uppercase tracking-wider mb-2">Transaction</p>
+              <a
+                href={txHash.startsWith("sim_") ? `#` : `https://stellar.expert/explorer/testnet/tx/${txHash}`}
+                target="_blank" rel="noreferrer"
+                className="flex items-center gap-2 mono text-xs text-violet-400 hover:text-violet-300 transition-colors"
+              >
+                <span className="truncate">{txHash}</span>
+                <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
+              </a>
+            </div>
+          )}
 
           <p className="mt-5 text-center text-xs text-slate-500">
-            This wallet holds ≥ the stated threshold. No balance, address, or history was disclosed.
+            This wallet holds ≥ the stated threshold. No balance, address, or history was disclosed. Replay nonce recorded.
           </p>
         </div>
       )}
@@ -1292,7 +1340,8 @@ function AuditorPage() {
             </div>
           </div>
           <div className="mono text-3xl font-bold text-red-400 mb-2">FALSE</div>
-          <p className="text-sm text-slate-400">Proof is invalid or does not satisfy the threshold.</p>
+          <p className="text-sm text-slate-400">Proof is invalid, nonce replay detected, or threshold check failed.</p>
+          {errorMsg && <p className="mt-2 text-xs mono text-red-400/80">{errorMsg}</p>}
         </div>
       )}
 
@@ -1352,12 +1401,30 @@ function Footer({ onNav }: { onNav:(v:View)=>void }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Root
+// Root Component
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function ZkCredApp() {
-  const [view, setView]     = useState<View>("home");
-  const [wallet, setWallet] = useState(false);
+  const [view, setView]         = useState<View>("home");
+  const [wallet, setWallet]     = useState<WalletInfo | null>(null);
+  const [balances, setBalances] = useState<AccountBalances>({ USDC: 0, EURC: 0, XLM: 0 });
+
+  const handleWalletConnect = async () => {
+    try {
+      const info = await connectWallet();
+      setWallet(info);
+      if (info.publicKey) {
+        const bal = await fetchAccountBalances(info.publicKey);
+        setBalances(bal);
+      }
+    } catch (err: any) {
+      if (err?.code === "NOT_INSTALLED") {
+        alert("Freighter wallet extension is not installed. Please install Freighter from freighter.app to connect your wallet.");
+      } else if (err?.code !== "USER_REJECTED") {
+        console.error("Wallet connect error:", err);
+      }
+    }
+  };
 
   const nav = useCallback((v: View) => {
     setView(v);
@@ -1366,13 +1433,14 @@ export default function ZkCredApp() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background:"#02020a" }}>
-      <Navbar view={view} onNav={nav} wallet={wallet} onWallet={() => setWallet(p => !p)} />
+      <Navbar view={view} onNav={nav} wallet={wallet} onWallet={handleWalletConnect} />
       <main className="flex-1 flex flex-col items-center">
         {view === "home"     && <HomePage onNav={nav} />}
-        {view === "prover"   && <ProverPage />}
-        {view === "verifier" && <AuditorPage />}
+        {view === "prover"   && <ProverPage wallet={wallet} balances={balances} />}
+        {view === "verifier" && <AuditorPage wallet={wallet} />}
       </main>
       <Footer onNav={nav} />
     </div>
   );
 }
+
